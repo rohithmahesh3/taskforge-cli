@@ -4,8 +4,7 @@
 *.dll
 *.so
 *.dylib
-/plane
-/plane-cli
+/taskforge
 
 # Test binary, built with `go test -c`
 *.test
@@ -36,7 +35,7 @@ build/
 
 # Local config (for testing)
 config.yaml
-.plane-cli/
+.taskforge-cli/
 
 # Environment variables
 .env
@@ -47,5 +46,5 @@ config.yaml
 *.temp
 
 
-# Plane CLI
-.plane/
+# TaskForge CLI
+.taskforge/

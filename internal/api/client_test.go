@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,7 +23,7 @@ func TestNewClient(t *testing.T) {
 			name:      "valid client",
 			apiKey:    "test-api-key",
 			workspace: "test-workspace",
-			baseURL:   "https://api.plane.so",
+			baseURL:   "https://api.taskforge.app",
 			wantErr:   false,
 		},
 	}
@@ -48,7 +48,7 @@ func TestNewClient(t *testing.T) {
 func TestClient_NewRequest(t *testing.T) {
 	client := &Client{
 		HTTPClient: &http.Client{Timeout: DefaultTimeout},
-		BaseURL:    "https://api.plane.so",
+		BaseURL:    "https://api.taskforge.app",
 		APIKey:     "test-api-key",
 		Workspace:  "test-workspace",
 	}
@@ -171,7 +171,7 @@ func TestClient_Do(t *testing.T) {
 }
 
 func TestClient_ListProjects(t *testing.T) {
-	mockProjects := []plane.Project{
+	mockProjects := []taskforge.Project{
 		{
 			ID:         "proj-1",
 			Name:       "Project 1",
@@ -205,13 +205,13 @@ func TestClient_ListProjects(t *testing.T) {
 }
 
 func TestClient_ListIssues(t *testing.T) {
-	mockIssues := []plane.Issue{
+	mockIssues := []taskforge.Issue{
 		{
 			ID:         "issue-1",
 			SequenceID: 1,
 			Name:       "Test Issue",
 			Priority:   "high",
-			State: plane.FlexibleState{
+			State: taskforge.FlexibleState{
 				ID: "backlog-state-id",
 			},
 		},
@@ -268,7 +268,7 @@ func TestClient_GetIssueByIdentifier(t *testing.T) {
 		assert.Equal(t, "/api/v1/workspaces/test-workspace/work-items/TESTW-42/", r.URL.Path)
 		assert.Equal(t, "assignees,state,labels", r.URL.Query().Get("expand"))
 
-		response := plane.Issue{
+		response := taskforge.Issue{
 			ID:         "issue-42",
 			SequenceID: 42,
 			Name:       "Issue by identifier",
@@ -297,7 +297,7 @@ func TestClient_GetIssueBySequenceID(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/api/v1/workspaces/test-workspace/projects/proj-1/":
-			err := json.NewEncoder(w).Encode(plane.Project{
+			err := json.NewEncoder(w).Encode(taskforge.Project{
 				ID:         "proj-1",
 				Identifier: "TESTW",
 				Name:       "Test Workspace",
@@ -305,7 +305,7 @@ func TestClient_GetIssueBySequenceID(t *testing.T) {
 			require.NoError(t, err)
 		case "/api/v1/workspaces/test-workspace/work-items/TESTW-7/":
 			assert.Equal(t, "assignees,state,labels", r.URL.Query().Get("expand"))
-			err := json.NewEncoder(w).Encode(plane.Issue{
+			err := json.NewEncoder(w).Encode(taskforge.Issue{
 				ID:         "issue-7",
 				SequenceID: 7,
 				Name:       "Sequence issue",
@@ -334,14 +334,14 @@ func TestClient_CreateIssue(t *testing.T) {
 		assert.Equal(t, "POST", r.Method)
 		assert.Equal(t, "/api/v1/workspaces/test-workspace/projects/proj-1/work-items/", r.URL.Path)
 
-		var req plane.CreateIssueRequest
+		var req taskforge.CreateIssueRequest
 		err := json.NewDecoder(r.Body).Decode(&req)
 		require.NoError(t, err)
 
 		assert.Equal(t, "New Issue", req.Name)
 		assert.Equal(t, "high", req.Priority)
 
-		response := plane.Issue{
+		response := taskforge.Issue{
 			ID:         "new-issue-id",
 			SequenceID: 42,
 			Name:       req.Name,
@@ -361,7 +361,7 @@ func TestClient_CreateIssue(t *testing.T) {
 		Workspace:  "test-workspace",
 	}
 
-	req := plane.CreateIssueRequest{
+	req := taskforge.CreateIssueRequest{
 		Name:     "New Issue",
 		Priority: "high",
 	}

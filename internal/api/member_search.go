@@ -3,12 +3,12 @@ package api
 import (
 	"strings"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 // FilterWorkspaceMembers performs client-side filtering for workspace members.
-// It does not imply any server-side search support in the Plane API.
-func FilterWorkspaceMembers(members []plane.User, query string, exact bool, limit int) []plane.User {
+// It does not imply any server-side search support in the TaskForge API.
+func FilterWorkspaceMembers(members []taskforge.User, query string, exact bool, limit int) []taskforge.User {
 	if len(members) == 0 {
 		return nil
 	}
@@ -18,7 +18,7 @@ func FilterWorkspaceMembers(members []plane.User, query string, exact bool, limi
 	}
 
 	normalizedQuery := normalizeMemberSearchValue(query)
-	filtered := make([]plane.User, 0, len(members))
+	filtered := make([]taskforge.User, 0, len(members))
 
 	for _, member := range members {
 		if memberMatchesQuery(member, normalizedQuery, exact) {
@@ -29,7 +29,7 @@ func FilterWorkspaceMembers(members []plane.User, query string, exact bool, limi
 	return limitWorkspaceMembers(filtered, limit)
 }
 
-func memberMatchesQuery(member plane.User, normalizedQuery string, exact bool) bool {
+func memberMatchesQuery(member taskforge.User, normalizedQuery string, exact bool) bool {
 	for _, candidate := range memberSearchFields(member) {
 		if candidate == "" {
 			continue
@@ -50,7 +50,7 @@ func memberMatchesQuery(member plane.User, normalizedQuery string, exact bool) b
 	return false
 }
 
-func limitWorkspaceMembers(members []plane.User, limit int) []plane.User {
+func limitWorkspaceMembers(members []taskforge.User, limit int) []taskforge.User {
 	if limit <= 0 || len(members) <= limit {
 		return members
 	}
@@ -58,7 +58,7 @@ func limitWorkspaceMembers(members []plane.User, limit int) []plane.User {
 	return members[:limit]
 }
 
-func memberFullName(member plane.User) string {
+func memberFullName(member taskforge.User) string {
 	parts := make([]string, 0, 2)
 	if first := strings.TrimSpace(member.FirstName); first != "" {
 		parts = append(parts, first)
@@ -70,7 +70,7 @@ func memberFullName(member plane.User) string {
 	return strings.Join(parts, " ")
 }
 
-func memberSearchFields(member plane.User) []string {
+func memberSearchFields(member taskforge.User) []string {
 	fullName := memberFullName(member)
 
 	return []string{

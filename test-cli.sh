@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Test script for Plane CLI
+# Test script for TaskForge CLI
 # Usage: ./test-cli.sh
 
 set -e
@@ -17,13 +17,13 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo "=========================================="
-echo "Plane CLI Test Script"
+echo "TaskForge CLI Test Script"
 echo "=========================================="
 echo ""
 
 # Build the CLI
 echo -e "${YELLOW}Building CLI...${NC}"
-cd /home/rohithmahesh/Dev/plane/plane-cli
+cd /home/rohithmahesh/Dev/plane/taskforge
 go build -o plane main.go
 echo -e "${GREEN}✓ Build successful${NC}"
 echo ""
@@ -41,11 +41,11 @@ echo ""
 
 # Test 3: Initialize config directory
 echo -e "${YELLOW}Test 3: Initialize config${NC}"
-mkdir -p ~/.config/plane-cli
-echo "version: \"1.0\"" > ~/.config/plane-cli/config.yaml
-echo "output_format: yaml" >> ~/.config/plane-cli/config.yaml
-echo "api_host: http://plane.tequerist.com" >> ~/.config/plane-cli/config.yaml
-echo "default_workspace: test-workspace" >> ~/.config/plane-cli/config.yaml
+mkdir -p ~/.config/taskforge
+echo "version: \"1.0\"" > ~/.config/taskforge/config.yaml
+echo "output_format: yaml" >> ~/.config/taskforge/config.yaml
+echo "api_host: http://plane.tequerist.com" >> ~/.config/taskforge/config.yaml
+echo "default_workspace: test-workspace" >> ~/.config/taskforge/config.yaml
 echo -e "${GREEN}✓ Config initialized${NC}"
 echo ""
 

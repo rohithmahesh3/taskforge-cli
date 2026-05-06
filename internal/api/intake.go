@@ -3,15 +3,15 @@ package api
 import (
 	"fmt"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 // ListIntakeIssues retrieves all intake issues for a project
-func (c *Client) ListIntakeIssues(projectID string) ([]plane.IntakeIssue, error) {
+func (c *Client) ListIntakeIssues(projectID string) ([]taskforge.IntakeIssue, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/intake-issues/", c.Workspace, projectID)
 
 	var response struct {
-		Results []plane.IntakeIssue `json:"results"`
+		Results []taskforge.IntakeIssue `json:"results"`
 	}
 
 	if err := c.Get(path, nil, &response); err != nil {
@@ -22,7 +22,7 @@ func (c *Client) ListIntakeIssues(projectID string) ([]plane.IntakeIssue, error)
 }
 
 // GetIntakeIssue retrieves a specific intake issue
-func (c *Client) GetIntakeIssue(projectID, intakeID string) (*plane.IntakeIssue, error) {
+func (c *Client) GetIntakeIssue(projectID, intakeID string) (*taskforge.IntakeIssue, error) {
 	intake, err := c.getIntakeIssue(projectID, intakeID)
 	if err == nil {
 		return intake, nil
@@ -46,10 +46,10 @@ func (c *Client) GetIntakeIssue(projectID, intakeID string) (*plane.IntakeIssue,
 	return nil, err
 }
 
-func (c *Client) getIntakeIssue(projectID, intakeID string) (*plane.IntakeIssue, error) {
+func (c *Client) getIntakeIssue(projectID, intakeID string) (*taskforge.IntakeIssue, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/intake-issues/%s/", c.Workspace, projectID, intakeID)
 
-	var intake plane.IntakeIssue
+	var intake taskforge.IntakeIssue
 	if err := c.Get(path, nil, &intake); err != nil {
 		return nil, err
 	}
@@ -58,10 +58,10 @@ func (c *Client) getIntakeIssue(projectID, intakeID string) (*plane.IntakeIssue,
 }
 
 // CreateIntakeIssue creates a new intake issue
-func (c *Client) CreateIntakeIssue(projectID string, req plane.CreateIntakeIssueRequest) (*plane.IntakeIssue, error) {
+func (c *Client) CreateIntakeIssue(projectID string, req taskforge.CreateIntakeIssueRequest) (*taskforge.IntakeIssue, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/intake-issues/", c.Workspace, projectID)
 
-	var intake plane.IntakeIssue
+	var intake taskforge.IntakeIssue
 	if err := c.Post(path, req, &intake); err != nil {
 		return nil, err
 	}

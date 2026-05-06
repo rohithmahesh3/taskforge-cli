@@ -6,11 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 func TestListWorklogs(t *testing.T) {
-	mockWorklogs := []plane.Worklog{
+	mockWorklogs := []taskforge.Worklog{
 		{ID: "worklog-1", Description: "Initial work", Duration: 60},
 		{ID: "worklog-2", Description: "More work", Duration: 90},
 	}
@@ -24,7 +24,7 @@ func TestListWorklogs(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Worklog `json:"results"`
+			Results []taskforge.Worklog `json:"results"`
 		}{
 			Results: mockWorklogs,
 		}
@@ -59,7 +59,7 @@ func TestCreateWorklog(t *testing.T) {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
 
-		var req plane.CreateWorklogRequest
+		var req taskforge.CreateWorklogRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request: %v", err)
 		}
@@ -71,7 +71,7 @@ func TestCreateWorklog(t *testing.T) {
 			t.Errorf("Expected description 'Worked on feature', got '%s'", req.Description)
 		}
 
-		worklog := plane.Worklog{
+		worklog := taskforge.Worklog{
 			ID:          "new-worklog-id",
 			Description: req.Description,
 			Duration:    req.Duration,
@@ -89,7 +89,7 @@ func TestCreateWorklog(t *testing.T) {
 		Workspace:  "test-workspace",
 	}
 
-	req := plane.CreateWorklogRequest{
+	req := taskforge.CreateWorklogRequest{
 		Description: "Worked on feature",
 		Duration:    120,
 	}
@@ -114,9 +114,9 @@ func TestGetTotalWorklogTime(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Worklog `json:"results"`
+			Results []taskforge.Worklog `json:"results"`
 		}{
-			Results: []plane.Worklog{
+			Results: []taskforge.Worklog{
 				{ID: "worklog-1", Duration: 60},
 				{ID: "worklog-2", Duration: 90},
 			},

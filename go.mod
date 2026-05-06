@@ -1,4 +1,4 @@
-module github.com/rohithmahesh3/plane-cli
+module github.com/rohithmahesh3/taskforge-cli
 
 go 1.24.0
 

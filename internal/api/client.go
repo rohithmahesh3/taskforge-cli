@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rohithmahesh3/plane-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 )
 
 const (
@@ -43,7 +43,7 @@ type Response struct {
 func NewClient() (*Client, error) {
 	apiKey, err := config.GetAPIKey()
 	if err != nil {
-		return nil, fmt.Errorf("not authenticated. Run 'plane-cli auth login' first")
+		return nil, fmt.Errorf("not authenticated. Run 'taskforge auth login' first")
 	}
 
 	workspace := config.Cfg.DefaultWorkspace
@@ -53,7 +53,7 @@ func NewClient() (*Client, error) {
 
 	baseURL := config.Cfg.APIHost
 	if baseURL == "" {
-		return nil, fmt.Errorf("no API host configured. Run 'plane-cli auth login' to configure")
+		return nil, fmt.Errorf("no API host configured. Run 'taskforge auth login' to configure")
 	}
 
 	return &Client{

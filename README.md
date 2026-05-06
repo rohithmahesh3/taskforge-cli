@@ -1,6 +1,6 @@
-# Plane CLI
+# TaskForge CLI
 
-A powerful command-line interface for [Plane](https://plane.so) - the open-source project management tool.
+A powerful command-line interface for [TaskForge](https://github.com/rohithmahesh3/taskforge) - the open-source project management tool.
 
 [![Go Version](https://img.shields.io/badge/go-%3E%3D1.21-blue)](https://golang.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -25,18 +25,18 @@ A powerful command-line interface for [Plane](https://plane.so) - the open-sourc
 ### From Source
 
 ```bash
-go install github.com/rohithmahesh3/plane-cli@latest
+go install github.com/rohithmahesh3/taskforge@latest
 ```
 
 ### Download Binary
 
-Download the latest release from the [releases page](https://github.com/rohithmahesh3/plane-cli/releases).
+Download the latest release from the [releases page](https://github.com/rohithmahesh3/taskforge/releases).
 
 ### Homebrew (macOS/Linux)
 
 ```bash
-brew tap rohithmahesh3/plane-cli
-brew install plane-cli
+brew tap rohithmahesh3/taskforge
+brew install taskforge
 ```
 
 ## Quick Start
@@ -44,11 +44,11 @@ brew install plane-cli
 ### 1. Authenticate
 
 ```bash
-plane-cli auth login
+taskforge auth login
 ```
 
-You'll need an API key from Plane:
-1. Go to your Plane workspace
+You'll need an API key from TaskForge:
+1. Go to your TaskForge workspace
 2. Navigate to Profile Settings → Personal Access Tokens
 3. Create a new token
 4. Use it when prompted
@@ -56,15 +56,15 @@ You'll need an API key from Plane:
 ### 2. Initialize Project
 
 ```bash
-plane-cli init
+taskforge init
 ```
 
-This creates a `.plane/settings.yaml` file in your current directory with workspace and project settings.
+This creates a `.taskforge/settings.yaml` file in your current directory with workspace and project settings.
 
 ### 3. Inject Context into Agent Files (Optional)
 
 ```bash
-plane-cli inject
+taskforge inject
 ```
 
 This injects CLI command documentation into agent files (AGENTS.md, GEMINI.md, CLAUDE.md, CURSOR.md) for AI assistants.
@@ -72,38 +72,38 @@ This injects CLI command documentation into agent files (AGENTS.md, GEMINI.md, C
 ### 4. Check Workspace Access
 
 ```bash
-plane-cli workspace info
+taskforge workspace info
 ```
 
 ### 5. List Projects
 
 ```bash
-plane-cli project list
+taskforge project list
 ```
 
 ### 6. List Issues
 
 ```bash
-plane-cli issue list
+taskforge issue list
 ```
 
 ## Configuration
 
-Configuration is stored in `~/.config/plane-cli/config.yaml`:
+Configuration is stored in `~/.config/taskforge/config.yaml`:
 
 ```yaml
 version: "1.0"
 default_workspace: my-workspace
 default_project: my-project-id
 output_format: yaml
-api_host: https://api.plane.so
+api_host: https://api.taskforge.app
 ```
 
 ### Environment Variables
 
-- `PLANE_API_KEY` - Your Plane API key
-- `PLANE_WORKSPACE` - Default workspace slug
-- `PLANE_PROJECT` - Default project ID
+- `TASKFORGE_API_KEY` - Your TaskForge API key
+- `TASKFORGE_WORKSPACE` - Default workspace slug
+- `TASKFORGE_PROJECT` - Default project ID
 
 ## Usage Examples
 
@@ -111,268 +111,268 @@ api_host: https://api.plane.so
 
 ```bash
 # Interactive login
-plane-cli auth login
+taskforge auth login
 
 # Login with flags
-plane-cli auth login --token YOUR_API_KEY --workspace my-workspace
+taskforge auth login --token YOUR_API_KEY --workspace my-workspace
 
 # Check authentication status
-plane-cli auth status
+taskforge auth status
 
 # Logout
-plane-cli auth logout
+taskforge auth logout
 ```
 
 ### Project Initialization
 
 ```bash
 # Initialize project settings interactively
-plane-cli init
+taskforge init
 
 # Initialize with specific workspace and project
-plane-cli init --workspace my-workspace --project PROJECT_ID
+taskforge init --workspace my-workspace --project PROJECT_ID
 
 # Create a new project during init
-plane-cli init --workspace my-workspace --create-project --project-name "My New Project"
+taskforge init --workspace my-workspace --create-project --project-name "My New Project"
 
 # Update existing settings
-plane-cli init --upgrade
+taskforge init --upgrade
 ```
 
 ### Context Injection
 
 ```bash
 # Inject context into all agent files
-plane-cli inject
+taskforge inject
 
 # Inject into specific file
-plane-cli inject --file AGENTS.md
+taskforge inject --file AGENTS.md
 
 # Preview changes without modifying files
-plane-cli inject --dry-run
+taskforge inject --dry-run
 
 # Force update even if unchanged
-plane-cli inject --force
+taskforge inject --force
 ```
 
 ### Workspaces
 
 ```bash
 # Show workspace details
-plane-cli workspace info
+taskforge workspace info
 
 # Switch default workspace
-plane-cli workspace switch my-workspace
+taskforge workspace switch my-workspace
 
 # List workspace members
-plane-cli workspace members
+taskforge workspace members
 
 # Search workspace members before assigning issues
-plane-cli workspace members --search roh
+taskforge workspace members --search roh
 ```
 
 ### Projects
 
 ```bash
 # List projects
-plane-cli project list
+taskforge project list
 
 # Create a new project
-plane-cli project create
+taskforge project create
 
 # View project details
-plane-cli project info PROJECT_ID
+taskforge project info PROJECT_ID
 
 # Delete a project
-plane-cli project delete PROJECT_ID
+taskforge project delete PROJECT_ID
 
 # List project members
-plane-cli project members PROJECT_ID
+taskforge project members PROJECT_ID
 ```
 
 ### Issues (Work Items)
 
 ```bash
 # List issues
-plane-cli issue list
+taskforge issue list
 
 # List with filters
-plane-cli issue list --state <state-id>
-plane-cli issue list --assignee <assignee-id>
+taskforge issue list --state <state-id>
+taskforge issue list --assignee <assignee-id>
 
 # View issue details (supports sequence ID or UUID)
-plane-cli issue view 123
-plane-cli issue view uuid-here
+taskforge issue view 123
+taskforge issue view uuid-here
 
 # Create an issue
-plane-cli issue create --title "Bug fix" --priority high
-plane-cli issue create -t "Feature request" -d "Description" -p medium -a <assignee-id>
+taskforge issue create --title "Bug fix" --priority high
+taskforge issue create -t "Feature request" -d "Description" -p medium -a <assignee-id>
 
 # Edit an issue
-plane-cli issue edit 123 --state <state-id>
-plane-cli issue edit 123 --priority urgent --assignee <assignee-id>
-plane-cli issue edit 123 --assignee <assignee-id> --label bug,urgent
+taskforge issue edit 123 --state <state-id>
+taskforge issue edit 123 --priority urgent --assignee <assignee-id>
+taskforge issue edit 123 --assignee <assignee-id> --label bug,urgent
 
 # Delete an issue
-plane-cli issue delete 123
+taskforge issue delete 123
 
 # Search issues across workspace
-plane-cli issue search "login bug"
+taskforge issue search "login bug"
 ```
 
 ### Issue Comments
 
 ```bash
 # List comments on an issue
-plane-cli issue comment list 123
+taskforge issue comment list 123
 
 # Add a comment
-plane-cli issue comment add 123 --text "Fixed in PR #42"
-plane-cli issue comment add 123 --text "Customer feedback" --access EXTERNAL
+taskforge issue comment add 123 --text "Fixed in PR #42"
+taskforge issue comment add 123 --text "Customer feedback" --access EXTERNAL
 
 # Delete a comment
-plane-cli issue comment delete 123 COMMENT_ID
+taskforge issue comment delete 123 COMMENT_ID
 ```
 
 ### Issue Time Tracking
 
 ```bash
 # List time logs
-plane-cli issue time list 123
+taskforge issue time list 123
 
 # Log time (supports multiple formats)
-plane-cli issue time log 123 2h30m --description "Fixed the bug"
-plane-cli issue time log 123 90 --description "Code review"
+taskforge issue time log 123 2h30m --description "Fixed the bug"
+taskforge issue time log 123 90 --description "Code review"
 
 # Show total time logged
-plane-cli issue time total 123
+taskforge issue time total 123
 
 # Edit a time log
-plane-cli issue time edit 123 WORKLOG_ID --duration 3h
+taskforge issue time edit 123 WORKLOG_ID --duration 3h
 
 # Delete a time log
-plane-cli issue time delete 123 WORKLOG_ID
+taskforge issue time delete 123 WORKLOG_ID
 ```
 
 ### Issue Links
 
 ```bash
 # List links on an issue
-plane-cli issue link list 123
+taskforge issue link list 123
 
 # Add a link
-plane-cli issue link add 123 https://github.com/repo/pull/42 --title "Related PR"
+taskforge issue link add 123 https://github.com/repo/pull/42 --title "Related PR"
 
 # Delete a link
-plane-cli issue link delete 123 LINK_ID
+taskforge issue link delete 123 LINK_ID
 ```
 
 ### Issue Attachments
 
 ```bash
 # List attachments
-plane-cli issue attachment list 123
+taskforge issue attachment list 123
 
 # Upload a file
-plane-cli issue attachment upload 123 ./screenshot.png
+taskforge issue attachment upload 123 ./screenshot.png
 
 # Edit attachment metadata
-plane-cli issue attachment edit 123 ATTACHMENT_ID --name "new-name.png"
+taskforge issue attachment edit 123 ATTACHMENT_ID --name "new-name.png"
 
 # Archive/unarchive
-plane-cli issue attachment edit 123 ATTACHMENT_ID --archive
+taskforge issue attachment edit 123 ATTACHMENT_ID --archive
 
 # Delete an attachment
-plane-cli issue attachment delete 123 ATTACHMENT_ID
+taskforge issue attachment delete 123 ATTACHMENT_ID
 ```
 
 ### Issue Activity History
 
 ```bash
 # List activity history
-plane-cli issue activity list 123
+taskforge issue activity list 123
 
 # View specific activity details
-plane-cli issue activity view 123 ACTIVITY_ID
+taskforge issue activity view 123 ACTIVITY_ID
 ```
 
 ### Cycles (Sprints)
 
 ```bash
 # List cycles
-plane-cli cycle list
+taskforge cycle list
 
 # List including archived
-plane-cli cycle list --archived
+taskforge cycle list --archived
 
 # View cycle details
-plane-cli cycle view CYCLE_ID
+taskforge cycle view CYCLE_ID
 
 # Create a cycle
-plane-cli cycle create --name "Sprint 1" --start-date 2024-01-01 --end-date 2024-01-14
+taskforge cycle create --name "Sprint 1" --start-date 2024-01-01 --end-date 2024-01-14
 
 # Edit a cycle
-plane-cli cycle edit CYCLE_ID --name "Sprint 1 (Revised)"
+taskforge cycle edit CYCLE_ID --name "Sprint 1 (Revised)"
 
 # Delete a cycle
-plane-cli cycle delete CYCLE_ID
+taskforge cycle delete CYCLE_ID
 
 # Archive
-plane-cli cycle archive CYCLE_ID
+taskforge cycle archive CYCLE_ID
 
 # List issues in a cycle
-plane-cli cycle issues CYCLE_ID
+taskforge cycle issues CYCLE_ID
 
 # Add issues to a cycle
-plane-cli cycle add-issues CYCLE_ID ISSUE_ID_1 ISSUE_ID_2
+taskforge cycle add-issues CYCLE_ID ISSUE_ID_1 ISSUE_ID_2
 
 # Remove an issue from a cycle
-plane-cli cycle remove-issue CYCLE_ID ISSUE_ID
+taskforge cycle remove-issue CYCLE_ID ISSUE_ID
 ```
 
 ### Modules
 
 ```bash
 # List modules
-plane-cli module list
+taskforge module list
 
 # List including archived
-plane-cli module list --archived
+taskforge module list --archived
 
 # View module details
-plane-cli module view MODULE_ID
+taskforge module view MODULE_ID
 
 # Create a module
-plane-cli module create --name "Authentication" --description "Auth features" --status <status-id>
+taskforge module create --name "Authentication" --description "Auth features" --status <status-id>
 
 # Edit a module
-plane-cli module edit MODULE_ID --status <status-id>
+taskforge module edit MODULE_ID --status <status-id>
 
 # Delete a module
-plane-cli module delete MODULE_ID
+taskforge module delete MODULE_ID
 
 # Archive
-plane-cli module archive MODULE_ID
+taskforge module archive MODULE_ID
 
 # List issues in a module
-plane-cli module issues MODULE_ID
+taskforge module issues MODULE_ID
 
 # Add issues to a module
-plane-cli module add-issues MODULE_ID ISSUE_ID_1 ISSUE_ID_2
+taskforge module add-issues MODULE_ID ISSUE_ID_1 ISSUE_ID_2
 
 # Remove an issue from a module
-plane-cli module remove-issue MODULE_ID ISSUE_ID
+taskforge module remove-issue MODULE_ID ISSUE_ID
 ```
 
 ### Pages (Documentation)
 
 ```bash
 # View page details
-plane-cli page view PAGE_ID
+taskforge page view PAGE_ID
 
 # Create a page
-plane-cli page create --name "API Documentation"
-plane-cli page create --name "Team Guidelines" --workspace
+taskforge page create --name "API Documentation"
+taskforge page create --name "Team Guidelines" --workspace
 
 ```
 
@@ -380,67 +380,67 @@ plane-cli page create --name "Team Guidelines" --workspace
 
 ```bash
 # List states
-plane-cli state list
+taskforge state list
 
 # View state details
-plane-cli state view STATE_ID
+taskforge state view STATE_ID
 
 # Create a state
-plane-cli state create --name "In Review" --color "#F59E0B" --group started
+taskforge state create --name "In Review" --color "#F59E0B" --group started
 
 # Edit a state
-plane-cli state edit STATE_ID --name "Code Review"
+taskforge state edit STATE_ID --name "Code Review"
 
 # Delete a state
-plane-cli state delete STATE_ID
+taskforge state delete STATE_ID
 ```
 
 ### Labels
 
 ```bash
 # List labels
-plane-cli label list
+taskforge label list
 
 # View label details
-plane-cli label view LABEL_ID
+taskforge label view LABEL_ID
 
 # Create a label
-plane-cli label create --name "Bug" --color "#EF4444" --description "Something is broken"
+taskforge label create --name "Bug" --color "#EF4444" --description "Something is broken"
 
 # Edit a label
-plane-cli label edit LABEL_ID --color "#3B82F6"
+taskforge label edit LABEL_ID --color "#3B82F6"
 
 # Delete a label
-plane-cli label delete LABEL_ID
+taskforge label delete LABEL_ID
 ```
 
 ### Intake (Inbox)
 
 ```bash
 # List intake issues
-plane-cli intake list
+taskforge intake list
 
 # View intake issue
-plane-cli intake view INTAKE_ID
+taskforge intake view INTAKE_ID
 
 # Create an intake issue
-plane-cli intake create --name "Feature Request" --priority high
+taskforge intake create --name "Feature Request" --priority high
 
 # Delete an intake issue
-plane-cli intake delete INTAKE_ID
+taskforge intake delete INTAKE_ID
 ```
 
 ### Issue Types
 
 ```bash
 # List issue types
-plane-cli type list
+taskforge type list
 
 # Create an issue type
-plane-cli type create --name "Bug" --description "Bug reports"
+taskforge type create --name "Bug" --description "Bug reports"
 
 # Delete an issue type
-plane-cli type delete TYPE_ID
+taskforge type delete TYPE_ID
 ```
 
 ### AI Context Generation
@@ -449,28 +449,28 @@ Generate CLI command reference for AI agents:
 
 ```bash
 # Default modules (issue, module, page, state, label, intake, type)
-plane-cli context
+taskforge context
 
 # Include additional modules
-plane-cli context --cycle
-plane-cli context --project
-plane-cli context --workspace
+taskforge context --cycle
+taskforge context --project
+taskforge context --workspace
 
 # Include all modules
-plane-cli context --all
+taskforge context --all
 ```
 
 ### Output Formats
 
 ```bash
 # JSON output
-plane-cli issue list --output json
+taskforge issue list --output json
 
 # YAML output
-plane-cli project list -o yaml
+taskforge project list -o yaml
 
 # No colors
-plane-cli issue list --no-color
+taskforge issue list --no-color
 ```
 
 ## Shell Completion
@@ -478,34 +478,34 @@ plane-cli issue list --no-color
 ### Bash
 
 ```bash
-source <(plane completion bash)
+source <(taskforge completion bash)
 # Add to ~/.bashrc for persistence
 ```
 
 ### Zsh
 
 ```bash
-source <(plane completion zsh)
+source <(taskforge completion zsh)
 # Add to ~/.zshrc for persistence
 ```
 
 ### Fish
 
 ```bash
-plane-cli completion fish | source
+taskforge completion fish | source
 # Save for persistence:
-plane-cli completion fish > ~/.config/fish/completions/plane.fish
+taskforge completion fish > ~/.config/fish/completions/taskforge.fish
 ```
 
 ### PowerShell
 
 ```powershell
-plane-cli completion powershell | Out-String | Invoke-Expression
+taskforge completion powershell | Out-String | Invoke-Expression
 ```
 
 ## API Support
 
-This CLI uses the [Plane REST API](https://developers.plane.so/api-reference/introduction) v1.
+This CLI uses the [TaskForge REST API](https://github.com/rohithmahesh3/taskforge) v1.
 
 Supported features:
 - ✅ Workspaces (info, switch, members)
@@ -578,7 +578,7 @@ make check  # Runs fmt, vet, lint, and test
 ## Project Structure
 
 ```
-plane-cli/
+taskforge/
 ├── cmd/                # Command definitions
 │   ├── auth/           # Authentication commands
 │   ├── config/         # Config commands
@@ -602,7 +602,7 @@ plane-cli/
 │   ├── api/            # API client and endpoints
 │   ├── config/         # Configuration management
 │   └── output/         # Output formatting (json/yaml)
-├── pkg/plane/          # Plane API types and models
+├── pkg/taskforge/          # TaskForge API types and models
 ├── main.go
 ├── go.mod
 └── README.md
@@ -624,7 +624,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- [Plane](https://plane.so) - The open-source project management tool
+- [TaskForge](https://github.com/rohithmahesh3/taskforge) - The open-source project management tool
 - [Cobra](https://github.com/spf13/cobra) - CLI framework for Go
 - [Survey](https://github.com/AlecAivazis/survey) - Interactive prompts
 
@@ -636,4 +636,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ for the Plane community
+Made with ❤️ for the TaskForge community

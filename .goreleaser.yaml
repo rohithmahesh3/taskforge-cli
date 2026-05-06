@@ -24,7 +24,7 @@ builds:
       - goos: windows
         goarch: arm64
     ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+      - -s -w -X github.com/rohithmahesh3/taskforge-cli/cmd.version={{.Version}} -X github.com/rohithmahesh3/taskforge-cli/cmd.commit={{.Commit}} -X github.com/rohithmahesh3/taskforge-cli/cmd.date={{.Date}}
 
 archives:
   - format: tar.gz

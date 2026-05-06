@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/renderer/html"
@@ -15,7 +15,7 @@ import (
 
 var codeBlockPattern = regexp.MustCompile(`(?s)<pre><code([^>]*)>(.*?)</code></pre>`)
 
-func resolveIssue(client *api.Client, projectID, ref string) (*plane.Issue, error) {
+func resolveIssue(client *api.Client, projectID, ref string) (*taskforge.Issue, error) {
 	if seqID, err := strconv.Atoi(strings.TrimSpace(ref)); err == nil {
 		return client.GetIssueBySequenceID(projectID, seqID)
 	}

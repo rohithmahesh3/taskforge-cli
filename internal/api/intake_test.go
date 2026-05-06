@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,9 +32,9 @@ func TestGetIntakeIssueFallsBackFromIntakeIDToIssueID(t *testing.T) {
 					body = `{"error":"not found"}`
 				case "/api/v1/workspaces/test-workspace/projects/test-project/intake-issues/":
 					response := struct {
-						Results []plane.IntakeIssue `json:"results"`
+						Results []taskforge.IntakeIssue `json:"results"`
 					}{
-						Results: []plane.IntakeIssue{
+						Results: []taskforge.IntakeIssue{
 							{ID: "intake-1", Issue: "issue-1"},
 						},
 					}
@@ -42,7 +42,7 @@ func TestGetIntakeIssueFallsBackFromIntakeIDToIssueID(t *testing.T) {
 					require.NoError(t, err)
 					body = string(payload)
 				case "/api/v1/workspaces/test-workspace/projects/test-project/intake-issues/issue-1/":
-					intake := plane.IntakeIssue{ID: "intake-1", Issue: "issue-1"}
+					intake := taskforge.IntakeIssue{ID: "intake-1", Issue: "issue-1"}
 					payload, err := json.Marshal(intake)
 					require.NoError(t, err)
 					body = string(payload)

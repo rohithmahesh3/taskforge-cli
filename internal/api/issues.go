@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 type IssueListOptions struct {
@@ -16,7 +16,7 @@ type IssueListOptions struct {
 	Offset   int
 }
 
-func (c *Client) ListIssues(projectID string, opts IssueListOptions) ([]plane.Issue, *Pagination, error) {
+func (c *Client) ListIssues(projectID string, opts IssueListOptions) ([]taskforge.Issue, *Pagination, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/", c.Workspace, projectID)
 
 	query := url.Values{}
@@ -39,7 +39,7 @@ func (c *Client) ListIssues(projectID string, opts IssueListOptions) ([]plane.Is
 		return nil, nil, err
 	}
 
-	var issues []plane.Issue
+	var issues []taskforge.Issue
 	if err := json.Unmarshal(response.Results, &issues); err != nil {
 		return nil, nil, err
 	}
@@ -47,13 +47,13 @@ func (c *Client) ListIssues(projectID string, opts IssueListOptions) ([]plane.Is
 	return issues, &response.Pagination, nil
 }
 
-func (c *Client) GetIssue(projectID, issueID string) (*plane.Issue, error) {
+func (c *Client) GetIssue(projectID, issueID string) (*taskforge.Issue, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/", c.Workspace, projectID, issueID)
 
 	query := url.Values{}
 	query.Set("expand", "assignees,state,labels")
 
-	var issue plane.Issue
+	var issue taskforge.Issue
 	if err := c.Get(path, query, &issue); err != nil {
 		return nil, err
 	}
@@ -61,13 +61,13 @@ func (c *Client) GetIssue(projectID, issueID string) (*plane.Issue, error) {
 	return &issue, nil
 }
 
-func (c *Client) GetIssueByIdentifier(identifier string) (*plane.Issue, error) {
+func (c *Client) GetIssueByIdentifier(identifier string) (*taskforge.Issue, error) {
 	path := fmt.Sprintf("/workspaces/%s/work-items/%s/", c.Workspace, url.PathEscape(identifier))
 
 	query := url.Values{}
 	query.Set("expand", "assignees,state,labels")
 
-	var issue plane.Issue
+	var issue taskforge.Issue
 	if err := c.Get(path, query, &issue); err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (c *Client) GetIssueByIdentifier(identifier string) (*plane.Issue, error) {
 	return &issue, nil
 }
 
-func (c *Client) GetIssueBySequenceID(projectID string, sequenceID int) (*plane.Issue, error) {
+func (c *Client) GetIssueBySequenceID(projectID string, sequenceID int) (*taskforge.Issue, error) {
 	project, err := c.GetProject(projectID)
 	if err != nil {
 		return nil, err
@@ -89,10 +89,10 @@ func (c *Client) GetIssueBySequenceID(projectID string, sequenceID int) (*plane.
 	return c.GetIssueByIdentifier(fmt.Sprintf("%s-%d", identifier, sequenceID))
 }
 
-func (c *Client) CreateIssue(projectID string, req plane.CreateIssueRequest) (*plane.Issue, error) {
+func (c *Client) CreateIssue(projectID string, req taskforge.CreateIssueRequest) (*taskforge.Issue, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/", c.Workspace, projectID)
 
-	var issue plane.Issue
+	var issue taskforge.Issue
 	if err := c.Post(path, req, &issue); err != nil {
 		return nil, err
 	}
@@ -100,10 +100,10 @@ func (c *Client) CreateIssue(projectID string, req plane.CreateIssueRequest) (*p
 	return &issue, nil
 }
 
-func (c *Client) UpdateIssue(projectID, issueID string, req plane.UpdateIssueRequest) (*plane.Issue, error) {
+func (c *Client) UpdateIssue(projectID, issueID string, req taskforge.UpdateIssueRequest) (*taskforge.Issue, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/", c.Workspace, projectID, issueID)
 
-	var issue plane.Issue
+	var issue taskforge.Issue
 	if err := c.Patch(path, req, &issue); err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func (c *Client) DeleteIssue(projectID, issueID string) error {
 // SearchIssues searches for issues across the workspace
 // Endpoint: GET /api/v1/workspaces/{workspace_slug}/work-items/search/
 // Returns: {"issues": [...]}
-func (c *Client) SearchIssues(query string) ([]plane.Issue, error) {
+func (c *Client) SearchIssues(query string) ([]taskforge.Issue, error) {
 	path := fmt.Sprintf("/workspaces/%s/work-items/search/", c.Workspace)
 
 	params := url.Values{}
@@ -127,7 +127,7 @@ func (c *Client) SearchIssues(query string) ([]plane.Issue, error) {
 
 	// The search endpoint returns a different structure
 	var response struct {
-		Issues []plane.Issue `json:"issues"`
+		Issues []taskforge.Issue `json:"issues"`
 	}
 
 	if err := c.Get(path, params, &response); err != nil {

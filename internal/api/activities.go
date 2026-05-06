@@ -3,15 +3,15 @@ package api
 import (
 	"fmt"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 // ListActivities retrieves all activities for an issue
-func (c *Client) ListActivities(projectID, issueID string) ([]plane.Activity, error) {
+func (c *Client) ListActivities(projectID, issueID string) ([]taskforge.Activity, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/activities/", c.Workspace, projectID, issueID)
 
 	var response struct {
-		Results []plane.Activity `json:"results"`
+		Results []taskforge.Activity `json:"results"`
 	}
 
 	if err := c.Get(path, nil, &response); err != nil {
@@ -22,10 +22,10 @@ func (c *Client) ListActivities(projectID, issueID string) ([]plane.Activity, er
 }
 
 // GetActivity retrieves a specific activity by ID
-func (c *Client) GetActivity(projectID, issueID, activityID string) (*plane.Activity, error) {
+func (c *Client) GetActivity(projectID, issueID, activityID string) (*taskforge.Activity, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/activities/%s/", c.Workspace, projectID, issueID, activityID)
 
-	var activity plane.Activity
+	var activity taskforge.Activity
 	if err := c.Get(path, nil, &activity); err != nil {
 		return nil, err
 	}

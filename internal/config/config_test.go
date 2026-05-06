@@ -35,7 +35,7 @@ func TestSaveConfig(t *testing.T) {
 	err := os.MkdirAll(configDir, 0755)
 	require.NoError(t, err)
 
-	// Change to temp directory to avoid loading local .plane/settings.yaml
+	// Change to temp directory to avoid loading local .taskforge/settings.yaml
 	originalWd, _ := os.Getwd()
 	defer func() {
 		_ = os.Chdir(originalWd)
@@ -74,7 +74,7 @@ func TestAPIKeyStorage(t *testing.T) {
 
 	// Use a test service to avoid overwriting user credentials
 	originalService := KeyringService
-	KeyringService = "plane-cli-test"
+	KeyringService = "taskforge-test"
 	defer func() { KeyringService = originalService }()
 
 	testKey := "test-api-key-12345"
@@ -163,21 +163,21 @@ func TestLocalConfig(t *testing.T) {
 	err = os.Chdir(projectDir)
 	require.NoError(t, err)
 
-	// 1. Test without .plane/settings.yaml
+	// 1. Test without .taskforge/settings.yaml
 	err = InitConfig()
 	require.NoError(t, err)
 	// It should retain global defaults if no file (actually, InitConfig will overwrite Cfg, but if we save it, it will read it. Let's just test loadLocalConfig directly or rely on InitConfig to fall back to nothing)
 
-	// 2. Test with .plane/settings.yaml
-	planeDir := filepath.Join(projectDir, ".plane")
-	err = os.MkdirAll(planeDir, 0755)
+	// 2. Test with .taskforge/settings.yaml
+	taskforgeDir := filepath.Join(projectDir, ".taskforge")
+	err = os.MkdirAll(taskforgeDir, 0755)
 	require.NoError(t, err)
 
 	settingsContent := []byte(`
 workspace: local-workspace
 project: local-project
 `)
-	err = os.WriteFile(filepath.Join(planeDir, "settings.yaml"), settingsContent, 0644)
+	err = os.WriteFile(filepath.Join(taskforgeDir, "settings.yaml"), settingsContent, 0644)
 	require.NoError(t, err)
 
 	// We can manually reset Cfg to defaults

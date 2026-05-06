@@ -6,11 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 func TestListCycles(t *testing.T) {
-	mockCycles := []plane.Cycle{
+	mockCycles := []taskforge.Cycle{
 		{ID: "cycle-1", Name: "Sprint 1", StartDate: "2024-01-01", EndDate: "2024-01-14"},
 		{ID: "cycle-2", Name: "Sprint 2", StartDate: "2024-01-15", EndDate: "2024-01-28"},
 	}
@@ -24,7 +24,7 @@ func TestListCycles(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Cycle `json:"results"`
+			Results []taskforge.Cycle `json:"results"`
 		}{
 			Results: mockCycles,
 		}
@@ -54,7 +54,7 @@ func TestListCycles(t *testing.T) {
 }
 
 func TestListArchivedCycles(t *testing.T) {
-	mockCycles := []plane.Cycle{
+	mockCycles := []taskforge.Cycle{
 		{ID: "cycle-archived-1", Name: "Sprint 0", ArchivedAt: "2026-02-01T00:00:00Z"},
 	}
 
@@ -67,7 +67,7 @@ func TestListArchivedCycles(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Cycle `json:"results"`
+			Results []taskforge.Cycle `json:"results"`
 		}{
 			Results: mockCycles,
 		}
@@ -102,7 +102,7 @@ func TestCreateCycle(t *testing.T) {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
 
-		var req plane.CreateCycleRequest
+		var req taskforge.CreateCycleRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request: %v", err)
 		}
@@ -111,7 +111,7 @@ func TestCreateCycle(t *testing.T) {
 			t.Errorf("Expected name 'Sprint 3', got '%s'", req.Name)
 		}
 
-		cycle := plane.Cycle{
+		cycle := taskforge.Cycle{
 			ID:        "new-cycle-id",
 			Name:      req.Name,
 			StartDate: req.StartDate,
@@ -130,7 +130,7 @@ func TestCreateCycle(t *testing.T) {
 		Workspace:  "test-workspace",
 	}
 
-	req := plane.CreateCycleRequest{
+	req := taskforge.CreateCycleRequest{
 		Name:      "Sprint 3",
 		StartDate: "2024-02-01",
 		EndDate:   "2024-02-14",
@@ -184,14 +184,14 @@ func TestListCycleIssuesExpandsState(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Issue `json:"results"`
+			Results []taskforge.Issue `json:"results"`
 		}{
-			Results: []plane.Issue{
+			Results: []taskforge.Issue{
 				{
 					ID:         "issue-1",
 					SequenceID: 202,
 					Name:       "Cycle issue",
-					State: plane.FlexibleState{
+					State: taskforge.FlexibleState{
 						ID:   "state-2",
 						Name: "In Progress",
 					},

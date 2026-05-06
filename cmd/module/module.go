@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ var ModuleCmd = &cobra.Command{
 	Use:     "module",
 	Aliases: []string{"mod"},
 	Short:   "Manage modules",
-	Long:    `List, create, edit, and manage Plane modules.`,
+	Long:    `List, create, edit, and manage TaskForge modules.`,
 }
 
 var listCmd = &cobra.Command{
@@ -47,8 +47,8 @@ var createCmd = &cobra.Command{
 	Long: `Create a new module in the current project.
 
 Examples:
-  plane module create --name "Authentication" --description "User auth features"
-  plane module create -n "API Integration" -s "in-progress"`,
+  taskforge module create --name "Authentication" --description "User auth features"
+  taskforge module create -n "API Integration" -s "in-progress"`,
 	RunE: runCreate,
 }
 
@@ -237,7 +237,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.CreateModuleRequest{
+	req := taskforge.CreateModuleRequest{
 		Name:        moduleName,
 		Description: moduleDescription,
 		Status:      moduleStatus,
@@ -271,7 +271,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.UpdateModuleRequest{}
+	req := taskforge.UpdateModuleRequest{}
 
 	// Interactive mode if no flags provided
 	if moduleName == "" && moduleDescription == "" && moduleStatus == "" {
@@ -410,7 +410,7 @@ func runIssues(cmd *cobra.Command, args []string) error {
 		ID       string            `table:"ID" json:"id"`
 		Sequence int               `table:"#" json:"sequence_id"`
 		Title    string            `table:"TITLE" json:"title"`
-		State    plane.StateOutput `table:"STATE" json:"state"`
+		State    taskforge.StateOutput `table:"STATE" json:"state"`
 		Priority string            `table:"PRIORITY" json:"priority"`
 	}
 
@@ -420,7 +420,7 @@ func runIssues(cmd *cobra.Command, args []string) error {
 			ID:       issue.ID,
 			Sequence: issue.SequenceID,
 			Title:    issue.Name,
-			State:    plane.StateOutputFromIssue(issue),
+			State:    taskforge.StateOutputFromIssue(issue),
 			Priority: issue.Priority,
 		})
 	}

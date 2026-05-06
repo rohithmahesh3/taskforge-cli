@@ -9,11 +9,11 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/cmd/inject"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/cmd/inject"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -31,19 +31,19 @@ var (
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialize Plane CLI for current directory",
-	Long: `Initialize .plane/settings.yaml for project-local configuration.
+	Short: "Initialize TaskForge CLI for current directory",
+	Long: `Initialize .taskforge/settings.yaml for project-local configuration.
 
-This creates a .plane/settings.yaml file in the current directory with
-workspace and project settings, allowing you to use plane commands without
+This creates a .taskforge/settings.yaml file in the current directory with
+workspace and project settings, allowing you to use taskforge commands without
 specifying --workspace and --project flags.
 
 Examples:
-  plane-cli init                                    # Interactive setup
-  plane-cli init --workspace my-ws                  # Use specific workspace
-  plane-cli init --workspace my-ws --project FRONT  # Use existing project
-  plane-cli init --workspace my-ws --create-project --project-name "New App"
-  plane-cli init --upgrade                          # Update existing settings`,
+  taskforge init                                    # Interactive setup
+  taskforge init --workspace my-ws                  # Use specific workspace
+  taskforge init --workspace my-ws --project FRONT  # Use existing project
+  taskforge init --workspace my-ws --create-project --project-name "New App"
+  taskforge init --upgrade                          # Update existing settings`,
 	RunE: runInit,
 }
 
@@ -54,21 +54,21 @@ func init() {
 	initCmd.Flags().StringVar(&initProjectName, "project-name", "", "New project name (with --create-project)")
 	initCmd.Flags().StringVar(&initProjectIdent, "project-identifier", "", "New project identifier (with --create-project)")
 	initCmd.Flags().StringVar(&initProjectDesc, "project-description", "", "New project description (with --create-project)")
-	initCmd.Flags().BoolVar(&initSkipGitignore, "skip-gitignore", false, "Skip adding .plane/ to .gitignore")
-	initCmd.Flags().BoolVar(&initUpgrade, "upgrade", false, "Upgrade existing .plane/settings.yaml")
+	initCmd.Flags().BoolVar(&initSkipGitignore, "skip-gitignore", false, "Skip adding .taskforge/ to .gitignore")
+	initCmd.Flags().BoolVar(&initUpgrade, "upgrade", false, "Upgrade existing .taskforge/settings.yaml")
 }
 
 func runInit(cmd *cobra.Command, args []string) error {
 	apiKey, err := config.GetAPIKey()
 	if err != nil || apiKey == "" {
-		return fmt.Errorf("not authenticated. Run 'plane-cli auth login' first")
+		return fmt.Errorf("not authenticated. Run 'taskforge auth login' first")
 	}
 
 	if err := config.InitConfig(); err != nil {
 		return fmt.Errorf("failed to initialize config: %w", err)
 	}
 
-	settingsPath := filepath.Join(".", ".plane", "settings.yaml")
+	settingsPath := filepath.Join(".", ".taskforge", "settings.yaml")
 	absSettingsPath, _ := filepath.Abs(settingsPath)
 	if _, err := os.Stat(settingsPath); err == nil {
 		if !initUpgrade {
@@ -132,7 +132,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	members, err := client.GetProjectMembers(projectID)
 	if err != nil {
 		output.Warning(fmt.Sprintf("Failed to fetch project members: %v", err))
-		members = []plane.User{}
+		members = []taskforge.User{}
 	}
 
 	// Prompt for default assignee
@@ -153,7 +153,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 
 	var confirm bool
 	if err := survey.AskOne(&survey.Confirm{
-		Message: "Create .plane/settings.yaml?",
+		Message: "Create .taskforge/settings.yaml?",
 		Default: true,
 	}, &confirm); err != nil {
 		return err
@@ -183,7 +183,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	if err := inject.InjectIntoFiles(agentFiles); err != nil {
 		output.Warning(fmt.Sprintf("Failed to inject context into agent files: %v", err))
 	} else {
-		output.Success("Updated agent files with plane-cli context")
+		output.Success("Updated agent files with taskforge context")
 	}
 
 	printSuccessMessage()
@@ -211,7 +211,7 @@ func getWorkspaceSlug() (string, error) {
 	var workspace string
 	err := survey.AskOne(&survey.Input{
 		Message: "Enter your workspace slug:",
-		Help:    "Find your workspace slug in your Plane URL (e.g., app.plane.so/my-workspace → slug is 'my-workspace')",
+		Help:    "Find your workspace slug in your TaskForge URL (e.g., app.taskforge.app/my-workspace → slug is 'my-workspace')",
 	}, &workspace, survey.WithValidator(survey.Required))
 	if err != nil {
 		return "", err
@@ -220,7 +220,7 @@ func getWorkspaceSlug() (string, error) {
 	return workspace, nil
 }
 
-func selectOrCreateProject(client *api.Client, projects []plane.Project) (string, error) {
+func selectOrCreateProject(client *api.Client, projects []taskforge.Project) (string, error) {
 	type projectOption struct {
 		display  string
 		id       string
@@ -291,7 +291,7 @@ func createNewProjectFlow(client *api.Client) (string, error) {
 	}
 
 	output.Info("Creating project...")
-	project, err := client.CreateProject(plane.CreateProjectRequest{
+	project, err := client.CreateProject(taskforge.CreateProjectRequest{
 		Name:        name,
 		Identifier:  identifier,
 		Description: description,
@@ -314,7 +314,7 @@ func createNewProjectNonInteractive(client *api.Client, name, identifier, descri
 	}
 
 	output.Info("Creating project...")
-	project, err := client.CreateProject(plane.CreateProjectRequest{
+	project, err := client.CreateProject(taskforge.CreateProjectRequest{
 		Name:        name,
 		Identifier:  identifier,
 		Description: description,
@@ -342,7 +342,7 @@ func generateIdentifier(name string) string {
 	return identifier
 }
 
-func resolveProjectID(projectIDOrIdentifier string, projects []plane.Project) (string, error) {
+func resolveProjectID(projectIDOrIdentifier string, projects []taskforge.Project) (string, error) {
 	if len(projectIDOrIdentifier) == 36 && strings.Count(projectIDOrIdentifier, "-") == 4 {
 		return projectIDOrIdentifier, nil
 	}
@@ -353,13 +353,13 @@ func resolveProjectID(projectIDOrIdentifier string, projects []plane.Project) (s
 		}
 	}
 
-	return "", fmt.Errorf("project '%s' not found. Use 'plane-cli project list' to see available projects", projectIDOrIdentifier)
+	return "", fmt.Errorf("project '%s' not found. Use 'taskforge project list' to see available projects", projectIDOrIdentifier)
 }
 
 func createSettingsFile(workspace, projectID, defaultAssignee, settingsPath string) error {
-	planeDir := filepath.Dir(settingsPath)
-	if err := os.MkdirAll(planeDir, 0755); err != nil {
-		return fmt.Errorf("failed to create .plane directory: %w", err)
+	taskforgeDir := filepath.Dir(settingsPath)
+	if err := os.MkdirAll(taskforgeDir, 0755); err != nil {
+		return fmt.Errorf("failed to create .taskforge directory: %w", err)
 	}
 
 	settings := config.LocalConfig{
@@ -378,7 +378,7 @@ func createSettingsFile(workspace, projectID, defaultAssignee, settingsPath stri
 		return fmt.Errorf("failed to close encoder: %w", err)
 	}
 
-	header := "# Plane CLI project settings\n# This file overrides global config for this directory\n\n"
+	header := "# TaskForge CLI project settings\n# This file overrides global config for this directory\n\n"
 	fullContent := header + buf.String()
 
 	if err := os.WriteFile(settingsPath, []byte(fullContent), 0644); err != nil {
@@ -402,13 +402,13 @@ func handleGitignore() error {
 		return err
 	}
 
-	if strings.Contains(string(content), ".plane/") {
+	if strings.Contains(string(content), ".taskforge/") {
 		return nil
 	}
 
 	var addToGitignore bool
 	if err := survey.AskOne(&survey.Confirm{
-		Message: "Add .plane/ to .gitignore?",
+		Message: "Add .taskforge/ to .gitignore?",
 		Default: true,
 	}, &addToGitignore); err != nil {
 		return err
@@ -432,24 +432,24 @@ func handleGitignore() error {
 		}
 	}
 
-	_, err = f.WriteString("\n# Plane CLI\n.plane/\n")
+	_, err = f.WriteString("\n# TaskForge CLI\n.taskforge/\n")
 	if err != nil {
 		return err
 	}
 
-	output.Success("Added .plane/ to .gitignore")
+	output.Success("Added .taskforge/ to .gitignore")
 	return nil
 }
 
 func printSuccessMessage() {
 	fmt.Println()
-	output.Info("You can now use plane commands without specifying workspace/project:")
-	fmt.Println("  plane-cli issue list")
-	fmt.Println("  plane-cli cycle list")
-	fmt.Println("  plane-cli module list")
+	output.Info("You can now use taskforge commands without specifying workspace/project:")
+	fmt.Println("  taskforge issue list")
+	fmt.Println("  taskforge cycle list")
+	fmt.Println("  taskforge module list")
 }
 
-func selectDefaultAssignee(members []plane.User) (string, error) {
+func selectDefaultAssignee(members []taskforge.User) (string, error) {
 	if len(members) == 0 {
 		return "", nil
 	}
@@ -490,7 +490,7 @@ func selectDefaultAssignee(members []plane.User) (string, error) {
 	return options[selectedIdx].id, nil
 }
 
-func formatMemberDisplay(m plane.User) string {
+func formatMemberDisplay(m taskforge.User) string {
 	if m.DisplayName != "" {
 		if m.Email != "" {
 			return fmt.Sprintf("%s (@%s)", m.DisplayName, m.Email)
@@ -503,7 +503,7 @@ func formatMemberDisplay(m plane.User) string {
 	return m.ID
 }
 
-func getAssigneeDisplayName(members []plane.User, assigneeID string) string {
+func getAssigneeDisplayName(members []taskforge.User, assigneeID string) string {
 	for _, m := range members {
 		if m.ID == assigneeID {
 			if m.DisplayName != "" {

@@ -3,9 +3,9 @@ package issue
 import (
 	"fmt"
 
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 

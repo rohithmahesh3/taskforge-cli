@@ -6,11 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 func TestListModules(t *testing.T) {
-	mockModules := []plane.Module{
+	mockModules := []taskforge.Module{
 		{ID: "module-1", Name: "Authentication", Status: "in-progress"},
 		{ID: "module-2", Name: "API Integration", Status: "backlog"},
 	}
@@ -24,7 +24,7 @@ func TestListModules(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Module `json:"results"`
+			Results []taskforge.Module `json:"results"`
 		}{
 			Results: mockModules,
 		}
@@ -54,7 +54,7 @@ func TestListModules(t *testing.T) {
 }
 
 func TestListArchivedModules(t *testing.T) {
-	mockModules := []plane.Module{
+	mockModules := []taskforge.Module{
 		{ID: "module-archived-1", Name: "Legacy Module", ArchivedAt: "2026-02-01T00:00:00Z"},
 	}
 
@@ -67,7 +67,7 @@ func TestListArchivedModules(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Module `json:"results"`
+			Results []taskforge.Module `json:"results"`
 		}{
 			Results: mockModules,
 		}
@@ -102,7 +102,7 @@ func TestCreateModule(t *testing.T) {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
 
-		var req plane.CreateModuleRequest
+		var req taskforge.CreateModuleRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request: %v", err)
 		}
@@ -111,7 +111,7 @@ func TestCreateModule(t *testing.T) {
 			t.Errorf("Expected name 'User Dashboard', got '%s'", req.Name)
 		}
 
-		module := plane.Module{
+		module := taskforge.Module{
 			ID:     "new-module-id",
 			Name:   req.Name,
 			Status: req.Status,
@@ -129,7 +129,7 @@ func TestCreateModule(t *testing.T) {
 		Workspace:  "test-workspace",
 	}
 
-	req := plane.CreateModuleRequest{
+	req := taskforge.CreateModuleRequest{
 		Name:   "User Dashboard",
 		Status: "backlog",
 	}
@@ -182,14 +182,14 @@ func TestListModuleIssuesExpandsState(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Issue `json:"results"`
+			Results []taskforge.Issue `json:"results"`
 		}{
-			Results: []plane.Issue{
+			Results: []taskforge.Issue{
 				{
 					ID:         "issue-1",
 					SequenceID: 101,
 					Name:       "Module issue",
-					State: plane.FlexibleState{
+					State: taskforge.FlexibleState{
 						ID:   "state-1",
 						Name: "Done",
 					},

@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 // ListModules retrieves all modules for a project
-func (c *Client) ListModules(projectID string, archived bool) ([]plane.Module, error) {
+func (c *Client) ListModules(projectID string, archived bool) ([]taskforge.Module, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/modules/", c.Workspace, projectID)
 	var response struct {
-		Results []plane.Module `json:"results"`
+		Results []taskforge.Module `json:"results"`
 	}
 
 	if !archived {
@@ -39,10 +39,10 @@ func (c *Client) ListModules(projectID string, archived bool) ([]plane.Module, e
 }
 
 // GetModule retrieves a specific module by ID
-func (c *Client) GetModule(projectID, moduleID string) (*plane.Module, error) {
+func (c *Client) GetModule(projectID, moduleID string) (*taskforge.Module, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/modules/%s/", c.Workspace, projectID, moduleID)
 
-	var module plane.Module
+	var module taskforge.Module
 	if err := c.Get(path, nil, &module); err != nil {
 		return nil, err
 	}
@@ -51,10 +51,10 @@ func (c *Client) GetModule(projectID, moduleID string) (*plane.Module, error) {
 }
 
 // CreateModule creates a new module in a project
-func (c *Client) CreateModule(projectID string, req plane.CreateModuleRequest) (*plane.Module, error) {
+func (c *Client) CreateModule(projectID string, req taskforge.CreateModuleRequest) (*taskforge.Module, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/modules/", c.Workspace, projectID)
 
-	var module plane.Module
+	var module taskforge.Module
 	if err := c.Post(path, req, &module); err != nil {
 		return nil, err
 	}
@@ -63,10 +63,10 @@ func (c *Client) CreateModule(projectID string, req plane.CreateModuleRequest) (
 }
 
 // UpdateModule updates an existing module
-func (c *Client) UpdateModule(projectID, moduleID string, req plane.UpdateModuleRequest) (*plane.Module, error) {
+func (c *Client) UpdateModule(projectID, moduleID string, req taskforge.UpdateModuleRequest) (*taskforge.Module, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/modules/%s/", c.Workspace, projectID, moduleID)
 
-	var module plane.Module
+	var module taskforge.Module
 	if err := c.Patch(path, req, &module); err != nil {
 		return nil, err
 	}
@@ -87,11 +87,11 @@ func (c *Client) ArchiveModule(projectID, moduleID string) error {
 }
 
 // ListModuleIssues retrieves all issues in a module
-func (c *Client) ListModuleIssues(projectID, moduleID string) ([]plane.Issue, error) {
+func (c *Client) ListModuleIssues(projectID, moduleID string) ([]taskforge.Issue, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/modules/%s/module-issues/", c.Workspace, projectID, moduleID)
 
 	var response struct {
-		Results []plane.Issue `json:"results"`
+		Results []taskforge.Issue `json:"results"`
 	}
 
 	query := url.Values{}

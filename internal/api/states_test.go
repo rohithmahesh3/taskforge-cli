@@ -6,11 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 func TestListStates(t *testing.T) {
-	mockStates := []plane.State{
+	mockStates := []taskforge.State{
 		{ID: "state-1", Name: "Todo", Color: "#3B82F6", Group: "unstarted"},
 		{ID: "state-2", Name: "In Progress", Color: "#F59E0B", Group: "started"},
 	}
@@ -24,7 +24,7 @@ func TestListStates(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.State `json:"results"`
+			Results []taskforge.State `json:"results"`
 		}{
 			Results: mockStates,
 		}
@@ -59,7 +59,7 @@ func TestCreateState(t *testing.T) {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
 
-		var req plane.CreateStateRequest
+		var req taskforge.CreateStateRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request: %v", err)
 		}
@@ -68,7 +68,7 @@ func TestCreateState(t *testing.T) {
 			t.Errorf("Expected name 'Review', got '%s'", req.Name)
 		}
 
-		state := plane.State{
+		state := taskforge.State{
 			ID:    "new-state-id",
 			Name:  req.Name,
 			Color: req.Color,
@@ -87,7 +87,7 @@ func TestCreateState(t *testing.T) {
 		Workspace:  "test-workspace",
 	}
 
-	req := plane.CreateStateRequest{
+	req := taskforge.CreateStateRequest{
 		Name:  "Review",
 		Color: "#8B5CF6",
 		Group: "started",

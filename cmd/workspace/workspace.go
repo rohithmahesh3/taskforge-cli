@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -20,9 +20,9 @@ var WorkspaceCmd = &cobra.Command{
 	Use:     "workspace",
 	Aliases: []string{"ws"},
 	Short:   "Manage workspaces",
-	Long: `Manage Plane workspaces.
+	Long: `Manage TaskForge workspaces.
 
-Note: The Plane API does not support listing or retrieving workspace details.
+Note: The TaskForge API does not support listing or retrieving workspace details.
 You can only switch between configured workspaces.`,
 }
 
@@ -31,7 +31,7 @@ var infoCmd = &cobra.Command{
 	Short: "Show workspace details",
 	Long: `Display detailed information about a specific workspace.
 
-Note: The Plane API does not have a workspace details endpoint.
+Note: The TaskForge API does not have a workspace details endpoint.
 This command will show the currently configured workspace.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runInfo,
@@ -42,7 +42,7 @@ var switchCmd = &cobra.Command{
 	Short: "Switch default workspace",
 	Long: `Set the default workspace for all future commands.
 
-Note: Since the Plane API doesn't support workspace listing, you need to
+Note: Since the TaskForge API doesn't support workspace listing, you need to
 provide the workspace slug manually or configure it interactively.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runSwitch,
@@ -76,7 +76,7 @@ func runInfo(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no workspace specified. Use --workspace flag or provide workspace slug")
 	}
 
-	// The Plane API doesn't have a workspace info endpoint
+	// The TaskForge API doesn't have a workspace info endpoint
 	// Show what we have configured
 	fmt.Printf("Workspace: %s\n", slug)
 	fmt.Printf("API Host: %s\n", config.Cfg.APIHost)

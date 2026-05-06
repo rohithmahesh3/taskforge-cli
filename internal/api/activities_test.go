@@ -6,11 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 func TestListActivities(t *testing.T) {
-	mockActivities := []plane.Activity{
+	mockActivities := []taskforge.Activity{
 		{
 			ID:      "activity-1",
 			Verb:    "created",
@@ -36,7 +36,7 @@ func TestListActivities(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Activity `json:"results"`
+			Results []taskforge.Activity `json:"results"`
 		}{
 			Results: mockActivities,
 		}
@@ -74,7 +74,7 @@ func TestGetActivity(t *testing.T) {
 			t.Errorf("Unexpected path: %s", r.URL.Path)
 		}
 
-		activity := plane.Activity{
+		activity := taskforge.Activity{
 			ID:    "activity-456",
 			Verb:  "updated",
 			Field: "priority",

@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +28,7 @@ var IssueCmd = &cobra.Command{
 	Use:     "issue",
 	Aliases: []string{"i", "issues", "ticket"},
 	Short:   "Manage issues (work items)",
-	Long:    `List, create, edit, and manage Plane issues/work items.`,
+	Long:    `List, create, edit, and manage TaskForge issues/work items.`,
 }
 
 var listCmd = &cobra.Command{
@@ -38,9 +38,9 @@ var listCmd = &cobra.Command{
 	Long: `List issues in the current project.
 
 Examples:
-  plane-cli issue list
-  plane-cli issue list --state <state-id>
-  plane-cli issue list --assignee <assignee-id>`,
+  taskforge issue list
+  taskforge issue list --state <state-id>
+  taskforge issue list --assignee <assignee-id>`,
 	RunE: runList,
 }
 
@@ -58,8 +58,8 @@ var createCmd = &cobra.Command{
 	Long: `Create a new issue in the current project.
 
 Examples:
-  plane-cli issue create --title "Bug fix" --priority high
-  plane-cli issue create -t "Feature request" -d "Description here"`,
+  taskforge issue create --title "Bug fix" --priority high
+  taskforge issue create -t "Feature request" -d "Description here"`,
 	RunE: runCreate,
 }
 
@@ -150,7 +150,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		ID       string            `table:"ID" json:"id"`
 		Sequence int               `table:"#" json:"sequence_id"`
 		Title    string            `table:"TITLE" json:"title"`
-		State    plane.StateOutput `table:"STATE" json:"state"`
+		State    taskforge.StateOutput `table:"STATE" json:"state"`
 		Priority string            `table:"PRIORITY" json:"priority"`
 		Assignee string            `table:"ASSIGNEE" json:"assignee"`
 	}
@@ -171,7 +171,7 @@ func runList(cmd *cobra.Command, args []string) error {
 			ID:       issue.ID,
 			Sequence: issue.SequenceID,
 			Title:    issue.Name,
-			State:    plane.StateOutputFromIssue(issue),
+			State:    taskforge.StateOutputFromIssue(issue),
 			Priority: issue.Priority,
 			Assignee: assignee,
 		})
@@ -245,7 +245,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		assignees = []string{config.Cfg.DefaultAssignee}
 	}
 
-	req := plane.CreateIssueRequest{
+	req := taskforge.CreateIssueRequest{
 		Name:            issueTitle,
 		DescriptionHTML: renderDescriptionHTML(issueDescription),
 		Priority:        issuePriority,
@@ -281,7 +281,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.UpdateIssueRequest{}
+	req := taskforge.UpdateIssueRequest{}
 
 	hasFlags := issueTitle != "" || issueDescription != "" || issuePriority != "" || issueState != "" || len(issueAssignees) > 0 || len(issueLabels) > 0
 
@@ -403,7 +403,7 @@ func runSearch(cmd *cobra.Command, args []string) error {
 		ID       string            `table:"ID" json:"id"`
 		Sequence int               `table:"#" json:"sequence_id"`
 		Title    string            `table:"TITLE" json:"title"`
-		State    plane.StateOutput `table:"STATE" json:"state"`
+		State    taskforge.StateOutput `table:"STATE" json:"state"`
 		Priority string            `table:"PRIORITY" json:"priority"`
 	}
 
@@ -413,7 +413,7 @@ func runSearch(cmd *cobra.Command, args []string) error {
 			ID:       issue.ID,
 			Sequence: issue.SequenceID,
 			Title:    issue.Name,
-			State:    plane.StateOutputFromIssue(issue),
+			State:    taskforge.StateOutputFromIssue(issue),
 			Priority: issue.Priority,
 		})
 	}

@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/integrationtest"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/integrationtest"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -28,26 +28,26 @@ func setupComprehensiveTest(t *testing.T) *Client {
 		return testClient
 	}
 
-	apiKey := os.Getenv("PLANE_API_KEY")
+	apiKey := os.Getenv("TASKFORGE_API_KEY")
 	if apiKey == "" {
-		t.Skip("PLANE_API_KEY not set, skipping integration test")
+		t.Skip("TASKFORGE_API_KEY not set, skipping integration test")
 	}
 
-	workspace := os.Getenv("PLANE_WORKSPACE")
+	workspace := os.Getenv("TASKFORGE_WORKSPACE")
 	if workspace == "" {
 		workspace = "test-workspace"
 	}
 
-	apiHost := os.Getenv("PLANE_API_HOST")
+	apiHost := os.Getenv("TASKFORGE_API_HOST")
 	if apiHost == "" {
-		apiHost = "https://api.plane.so"
+		apiHost = "https://api.taskforge.app"
 	}
 
 	config.Cfg.APIHost = apiHost
 	config.Cfg.DefaultWorkspace = workspace
 
 	originalService := config.KeyringService
-	config.KeyringService = "plane-cli-integration-test"
+	config.KeyringService = "taskforge-integration-test"
 	t.Cleanup(func() {
 		config.KeyringService = originalService
 		config.DeleteAPIKey()
@@ -65,7 +65,7 @@ func setupComprehensiveTest(t *testing.T) *Client {
 		Workspace:  workspace,
 	}
 
-	projectID := os.Getenv("PLANE_PROJECT")
+	projectID := os.Getenv("TASKFORGE_PROJECT")
 	if projectID == "" {
 		projects, err := testClient.ListProjects()
 		if err != nil {
@@ -83,8 +83,8 @@ func setupComprehensiveTest(t *testing.T) *Client {
 	return testClient
 }
 
-func createTestIssueForModule(t *testing.T, client *Client, name string) *plane.Issue {
-	req := plane.CreateIssueRequest{
+func createTestIssueForModule(t *testing.T, client *Client, name string) *taskforge.Issue {
+	req := taskforge.CreateIssueRequest{
 		Name:        fmt.Sprintf("%s %d", name, time.Now().UnixNano()),
 		Description: "Test issue for comprehensive integration tests",
 		Priority:    "low",
@@ -99,7 +99,7 @@ func cleanupTestIssue(t *testing.T, client *Client, issueID string) {
 	_ = client.DeleteIssue(testProjectID, issueID)
 }
 
-func requireTestProject(t *testing.T, client *Client) *plane.Project {
+func requireTestProject(t *testing.T, client *Client) *taskforge.Project {
 	t.Helper()
 
 	project, err := client.GetProject(testProjectID)
@@ -117,7 +117,7 @@ func TestLinksLifecycle(t *testing.T) {
 	issue := createTestIssueForModule(t, client, "Links Test Issue")
 	defer cleanupTestIssue(t, client, issue.ID)
 
-	link, err := client.CreateLink(testProjectID, issue.ID, plane.CreateLinkRequest{
+	link, err := client.CreateLink(testProjectID, issue.ID, taskforge.CreateLinkRequest{
 		URL:   "https://example.com/test-link",
 		Title: "Test Link",
 	})
@@ -134,7 +134,7 @@ func TestLinksLifecycle(t *testing.T) {
 	require.NoError(t, err)
 	assert.GreaterOrEqual(t, len(links), 1)
 
-	updatedLink, err := client.UpdateLink(testProjectID, issue.ID, link.ID, plane.UpdateLinkRequest{
+	updatedLink, err := client.UpdateLink(testProjectID, issue.ID, link.ID, taskforge.UpdateLinkRequest{
 		Title: "Updated Test Link",
 	})
 	require.NoError(t, err)
@@ -154,7 +154,7 @@ func TestCommentsLifecycle(t *testing.T) {
 	issue := createTestIssueForModule(t, client, "Comments Test Issue")
 	defer cleanupTestIssue(t, client, issue.ID)
 
-	comment, err := client.CreateComment(testProjectID, issue.ID, plane.CreateCommentRequest{
+	comment, err := client.CreateComment(testProjectID, issue.ID, taskforge.CreateCommentRequest{
 		CommentHTML: "<p>Test comment from integration test</p>",
 	})
 	require.NoError(t, err)
@@ -169,7 +169,7 @@ func TestCommentsLifecycle(t *testing.T) {
 	require.NoError(t, err)
 	assert.GreaterOrEqual(t, len(comments), 1)
 
-	updatedComment, err := client.UpdateComment(testProjectID, issue.ID, comment.ID, plane.UpdateCommentRequest{
+	updatedComment, err := client.UpdateComment(testProjectID, issue.ID, comment.ID, taskforge.UpdateCommentRequest{
 		CommentHTML: "<p>Updated test comment</p>",
 	})
 	require.NoError(t, err)
@@ -189,7 +189,7 @@ func TestActivitiesList(t *testing.T) {
 	issue := createTestIssueForModule(t, client, "Activities Test Issue")
 	defer cleanupTestIssue(t, client, issue.ID)
 
-	_, err := client.UpdateIssue(testProjectID, issue.ID, plane.UpdateIssueRequest{
+	_, err := client.UpdateIssue(testProjectID, issue.ID, taskforge.UpdateIssueRequest{
 		Priority: "high",
 	})
 	require.NoError(t, err)
@@ -218,7 +218,7 @@ func TestWorklogsLifecycle(t *testing.T) {
 	issue := createTestIssueForModule(t, client, "Worklogs Test Issue")
 	defer cleanupTestIssue(t, client, issue.ID)
 
-	worklog, err := client.CreateWorklog(testProjectID, issue.ID, plane.CreateWorklogRequest{
+	worklog, err := client.CreateWorklog(testProjectID, issue.ID, taskforge.CreateWorklogRequest{
 		Description: "Test worklog entry",
 		Duration:    3600,
 	})
@@ -235,7 +235,7 @@ func TestWorklogsLifecycle(t *testing.T) {
 	require.NoError(t, err)
 	assert.GreaterOrEqual(t, len(worklogs), 1)
 
-	updatedWorklog, err := client.UpdateWorklog(testProjectID, issue.ID, worklog.ID, plane.UpdateWorklogRequest{
+	updatedWorklog, err := client.UpdateWorklog(testProjectID, issue.ID, worklog.ID, taskforge.UpdateWorklogRequest{
 		Duration:    7200,
 		Description: "Updated worklog entry",
 	})
@@ -259,7 +259,7 @@ func TestCyclesLifecycle(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
 	cycleName := fmt.Sprintf("Test Cycle %d", time.Now().UnixNano())
-	cycle, err := client.CreateCycle(testProjectID, plane.CreateCycleRequest{
+	cycle, err := client.CreateCycle(testProjectID, taskforge.CreateCycleRequest{
 		Name:        cycleName,
 		Description: "Test cycle from integration tests",
 	})
@@ -301,7 +301,7 @@ func TestCyclesLifecycle(t *testing.T) {
 	assert.GreaterOrEqual(t, len(cycleIssues), 1)
 	t.Logf("Cycle has %d issues", len(cycleIssues))
 
-	updatedCycle, err := client.UpdateCycle(testProjectID, cycle.ID, plane.UpdateCycleRequest{
+	updatedCycle, err := client.UpdateCycle(testProjectID, cycle.ID, taskforge.UpdateCycleRequest{
 		Name:        cycleName + " Updated",
 		Description: "Updated description",
 	})
@@ -321,7 +321,7 @@ func TestModulesLifecycle(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
 	moduleName := fmt.Sprintf("Test Module %d", time.Now().UnixNano())
-	module, err := client.CreateModule(testProjectID, plane.CreateModuleRequest{
+	module, err := client.CreateModule(testProjectID, taskforge.CreateModuleRequest{
 		Name:        moduleName,
 		Description: "Test module from integration tests",
 	})
@@ -363,7 +363,7 @@ func TestModulesLifecycle(t *testing.T) {
 	assert.GreaterOrEqual(t, len(moduleIssues), 1)
 	t.Logf("Module has %d issues", len(moduleIssues))
 
-	updatedModule, err := client.UpdateModule(testProjectID, module.ID, plane.UpdateModuleRequest{
+	updatedModule, err := client.UpdateModule(testProjectID, module.ID, taskforge.UpdateModuleRequest{
 		Name:        moduleName + " Updated",
 		Description: "Updated description",
 	})
@@ -383,7 +383,7 @@ func TestLabelsLifecycle(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
 	labelName := fmt.Sprintf("test-label-%d", time.Now().UnixNano())
-	label, err := client.CreateLabel(testProjectID, plane.CreateLabelRequest{
+	label, err := client.CreateLabel(testProjectID, taskforge.CreateLabelRequest{
 		Name:        labelName,
 		Description: "Test label from integration tests",
 		Color:       "#FF5733",
@@ -414,7 +414,7 @@ func TestLabelsLifecycle(t *testing.T) {
 	}
 	assert.True(t, found, "Created label should be in list")
 
-	updatedLabel, err := client.UpdateLabel(testProjectID, label.ID, plane.UpdateLabelRequest{
+	updatedLabel, err := client.UpdateLabel(testProjectID, label.ID, taskforge.UpdateLabelRequest{
 		Name:        labelName + "-updated",
 		Description: "Updated description",
 		Color:       "#3366FF",
@@ -432,7 +432,7 @@ func TestStatesLifecycle(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
 	stateName := fmt.Sprintf("Test State %d", time.Now().UnixNano())
-	state, err := client.CreateState(testProjectID, plane.CreateStateRequest{
+	state, err := client.CreateState(testProjectID, taskforge.CreateStateRequest{
 		Name:        stateName,
 		Description: "Test state from integration tests",
 		Color:       "#00FF00",
@@ -464,7 +464,7 @@ func TestStatesLifecycle(t *testing.T) {
 	}
 	assert.True(t, found, "Created state should be in list")
 
-	updatedState, err := client.UpdateState(testProjectID, state.ID, plane.UpdateStateRequest{
+	updatedState, err := client.UpdateState(testProjectID, state.ID, taskforge.UpdateStateRequest{
 		Name:        stateName + " Updated",
 		Description: "Updated description",
 		Color:       "#FF0000",
@@ -485,7 +485,7 @@ func TestIssueTypesLifecycle(t *testing.T) {
 	}
 
 	typeName := fmt.Sprintf("Test Type %d", time.Now().UnixNano())
-	issueType, err := client.CreateIssueType(testProjectID, plane.CreateIssueTypeRequest{
+	issueType, err := client.CreateIssueType(testProjectID, taskforge.CreateIssueTypeRequest{
 		Name:        typeName,
 		Description: "Test issue type from integration tests",
 		IsActive:    true,
@@ -516,7 +516,7 @@ func TestIssueTypesLifecycle(t *testing.T) {
 	}
 	assert.True(t, found, "Created issue type should be in list")
 
-	updatedType, err := client.UpdateIssueType(testProjectID, issueType.ID, plane.UpdateIssueTypeRequest{
+	updatedType, err := client.UpdateIssueType(testProjectID, issueType.ID, taskforge.UpdateIssueTypeRequest{
 		Name:        typeName + " Updated",
 		Description: "Updated description",
 	})
@@ -567,7 +567,7 @@ func TestIssueWithParent(t *testing.T) {
 	child := createTestIssueForModule(t, client, "Child Issue")
 	defer cleanupTestIssue(t, client, child.ID)
 
-	updatedChild, err := client.UpdateIssue(testProjectID, child.ID, plane.UpdateIssueRequest{
+	updatedChild, err := client.UpdateIssue(testProjectID, child.ID, taskforge.UpdateIssueRequest{
 		Parent: parent.ID,
 	})
 	require.NoError(t, err)
@@ -578,7 +578,7 @@ func TestIssueWithParent(t *testing.T) {
 func TestIssueWithCycle(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
-	cycle, err := client.CreateCycle(testProjectID, plane.CreateCycleRequest{
+	cycle, err := client.CreateCycle(testProjectID, taskforge.CreateCycleRequest{
 		Name:      fmt.Sprintf("Issue Cycle Test %d", time.Now().UnixNano()),
 		StartDate: time.Now().Format("2006-01-02"),
 		EndDate:   time.Now().Add(7 * 24 * time.Hour).Format("2006-01-02"),
@@ -608,7 +608,7 @@ func TestIssueWithCycle(t *testing.T) {
 func TestIssueWithModule(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
-	module, err := client.CreateModule(testProjectID, plane.CreateModuleRequest{
+	module, err := client.CreateModule(testProjectID, taskforge.CreateModuleRequest{
 		Name: fmt.Sprintf("Issue Module Test %d", time.Now().UnixNano()),
 	})
 	require.NoError(t, err)
@@ -736,7 +736,7 @@ func TestAttachmentUploadLifecycle(t *testing.T) {
 func TestCycleArchive(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
-	cycle, err := client.CreateCycle(testProjectID, plane.CreateCycleRequest{
+	cycle, err := client.CreateCycle(testProjectID, taskforge.CreateCycleRequest{
 		Name:      fmt.Sprintf("Archive Test Cycle %d", time.Now().UnixNano()),
 		StartDate: "2024-01-01",
 		EndDate:   "2024-01-07",
@@ -753,7 +753,7 @@ func TestCycleArchive(t *testing.T) {
 func TestModuleArchive(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
-	module, err := client.CreateModule(testProjectID, plane.CreateModuleRequest{
+	module, err := client.CreateModule(testProjectID, taskforge.CreateModuleRequest{
 		Name:   fmt.Sprintf("Archive Test Module %d", time.Now().UnixNano()),
 		Status: "completed",
 	})
@@ -797,7 +797,7 @@ func TestIssueWithDates(t *testing.T) {
 	startDate := "2024-01-01"
 	targetDate := "2024-12-31"
 
-	updated, err := client.UpdateIssue(testProjectID, issue.ID, plane.UpdateIssueRequest{
+	updated, err := client.UpdateIssue(testProjectID, issue.ID, taskforge.UpdateIssueRequest{
 		StartDate:  startDate,
 		TargetDate: targetDate,
 	})
@@ -817,7 +817,7 @@ func TestIssueWithEstimatePoint(t *testing.T) {
 	issue := createTestIssueForModule(t, client, "Estimate Test Issue")
 	defer cleanupTestIssue(t, client, issue.ID)
 
-	updated, err := client.UpdateIssue(testProjectID, issue.ID, plane.UpdateIssueRequest{
+	updated, err := client.UpdateIssue(testProjectID, issue.ID, taskforge.UpdateIssueRequest{
 		EstimatePoint: 5,
 	})
 	require.NoError(t, err)
@@ -832,7 +832,7 @@ func TestIssueWithEstimatePoint(t *testing.T) {
 func TestIssueWithHTMLDescription(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
-	issue, err := client.CreateIssue(testProjectID, plane.CreateIssueRequest{
+	issue, err := client.CreateIssue(testProjectID, taskforge.CreateIssueRequest{
 		Name:            fmt.Sprintf("HTML Desc Test %d", time.Now().UnixNano()),
 		DescriptionHTML: "<h1>Test</h1><p>This is <strong>HTML</strong> description</p>",
 		Priority:        "medium",
@@ -853,7 +853,7 @@ func TestIssueWithHTMLDescription(t *testing.T) {
 func TestBulkAddIssuesToCycle(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
-	cycle, err := client.CreateCycle(testProjectID, plane.CreateCycleRequest{
+	cycle, err := client.CreateCycle(testProjectID, taskforge.CreateCycleRequest{
 		Name: fmt.Sprintf("Bulk Cycle Test %d", time.Now().UnixNano()),
 	})
 	require.NoError(t, err)
@@ -877,7 +877,7 @@ func TestBulkAddIssuesToCycle(t *testing.T) {
 func TestBulkAddIssuesToModule(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
-	module, err := client.CreateModule(testProjectID, plane.CreateModuleRequest{
+	module, err := client.CreateModule(testProjectID, taskforge.CreateModuleRequest{
 		Name: fmt.Sprintf("Bulk Module Test %d", time.Now().UnixNano()),
 	})
 	require.NoError(t, err)

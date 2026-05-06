@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +47,7 @@ var createCmd = &cobra.Command{
 	Long: `Create a new workflow state in the current project.
 
 Examples:
-  plane state create --name "In Review" --color "#F59E0B" --group started`,
+  taskforge state create --name "In Review" --color "#F59E0B" --group started`,
 	RunE: runCreate,
 }
 
@@ -217,7 +217,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.CreateStateRequest{
+	req := taskforge.CreateStateRequest{
 		Name:        stateName,
 		Description: stateDescription,
 		Color:       stateColor,
@@ -252,7 +252,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.UpdateStateRequest{}
+	req := taskforge.UpdateStateRequest{}
 
 	// Interactive mode if no flags provided
 	if stateName == "" && stateDescription == "" && stateColor == "" && stateGroup == "" {

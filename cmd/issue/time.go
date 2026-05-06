@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -58,8 +58,8 @@ Duration formats:
   - Hours and minutes: 2h30m, 1h45m
 
 Examples:
-  plane-cli issue time log ISS-123 2h30m
-  plane-cli issue time log ISS-123 90 -d "Fixed the bug"`,
+  taskforge issue time log ISS-123 2h30m
+  taskforge issue time log ISS-123 90 -d "Fixed the bug"`,
 		Args: cobra.RangeArgs(2, 2),
 		RunE: runTimeLog,
 	}
@@ -200,7 +200,7 @@ func runTimeLog(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.CreateWorklogRequest{
+	req := taskforge.CreateWorklogRequest{
 		Description: worklogDescription,
 		Duration:    duration,
 	}
@@ -270,7 +270,7 @@ func runTimeEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.UpdateWorklogRequest{}
+	req := taskforge.UpdateWorklogRequest{}
 
 	// Interactive mode if no flags provided
 	if worklogDescription == "" && worklogDuration == "" {

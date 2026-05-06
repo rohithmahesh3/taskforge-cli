@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 // ListCycles retrieves all cycles for a project
-func (c *Client) ListCycles(projectID string, archived bool) ([]plane.Cycle, error) {
+func (c *Client) ListCycles(projectID string, archived bool) ([]taskforge.Cycle, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/cycles/", c.Workspace, projectID)
 	var response struct {
-		Results []plane.Cycle `json:"results"`
+		Results []taskforge.Cycle `json:"results"`
 	}
 
 	if !archived {
@@ -39,10 +39,10 @@ func (c *Client) ListCycles(projectID string, archived bool) ([]plane.Cycle, err
 }
 
 // GetCycle retrieves a specific cycle by ID
-func (c *Client) GetCycle(projectID, cycleID string) (*plane.Cycle, error) {
+func (c *Client) GetCycle(projectID, cycleID string) (*taskforge.Cycle, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/cycles/%s/", c.Workspace, projectID, cycleID)
 
-	var cycle plane.Cycle
+	var cycle taskforge.Cycle
 	if err := c.Get(path, nil, &cycle); err != nil {
 		return nil, err
 	}
@@ -51,13 +51,13 @@ func (c *Client) GetCycle(projectID, cycleID string) (*plane.Cycle, error) {
 }
 
 // CreateCycle creates a new cycle in a project
-func (c *Client) CreateCycle(projectID string, req plane.CreateCycleRequest) (*plane.Cycle, error) {
+func (c *Client) CreateCycle(projectID string, req taskforge.CreateCycleRequest) (*taskforge.Cycle, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/cycles/", c.Workspace, projectID)
 	if req.ProjectID == "" {
 		req.ProjectID = projectID
 	}
 
-	var cycle plane.Cycle
+	var cycle taskforge.Cycle
 	if err := c.Post(path, req, &cycle); err != nil {
 		return nil, err
 	}
@@ -66,13 +66,13 @@ func (c *Client) CreateCycle(projectID string, req plane.CreateCycleRequest) (*p
 }
 
 // UpdateCycle updates an existing cycle
-func (c *Client) UpdateCycle(projectID, cycleID string, req plane.UpdateCycleRequest) (*plane.Cycle, error) {
+func (c *Client) UpdateCycle(projectID, cycleID string, req taskforge.UpdateCycleRequest) (*taskforge.Cycle, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/cycles/%s/", c.Workspace, projectID, cycleID)
 	if req.ProjectID == "" {
 		req.ProjectID = projectID
 	}
 
-	var cycle plane.Cycle
+	var cycle taskforge.Cycle
 	if err := c.Patch(path, req, &cycle); err != nil {
 		return nil, err
 	}
@@ -93,11 +93,11 @@ func (c *Client) ArchiveCycle(projectID, cycleID string) error {
 }
 
 // ListCycleIssues retrieves all issues in a cycle
-func (c *Client) ListCycleIssues(projectID, cycleID string) ([]plane.Issue, error) {
+func (c *Client) ListCycleIssues(projectID, cycleID string) ([]taskforge.Issue, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/cycles/%s/cycle-issues/", c.Workspace, projectID, cycleID)
 
 	var response struct {
-		Results []plane.Issue `json:"results"`
+		Results []taskforge.Issue `json:"results"`
 	}
 
 	query := url.Values{}

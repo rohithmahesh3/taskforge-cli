@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ var CycleCmd = &cobra.Command{
 	Use:     "cycle",
 	Aliases: []string{"sprint"},
 	Short:   "Manage cycles (sprints)",
-	Long:    `List, create, edit, and manage Plane cycles (sprints).`,
+	Long:    `List, create, edit, and manage TaskForge cycles (sprints).`,
 }
 
 var listCmd = &cobra.Command{
@@ -48,8 +48,8 @@ var createCmd = &cobra.Command{
 	Long: `Create a new cycle (sprint) in the current project.
 
 Examples:
-  plane cycle create --name "Sprint 1" --start-date 2024-01-01 --end-date 2024-01-14
-  plane cycle create -n "Q1 Planning" -d "First quarter planning cycle"`,
+  taskforge cycle create --name "Sprint 1" --start-date 2024-01-01 --end-date 2024-01-14
+  taskforge cycle create -n "Q1 Planning" -d "First quarter planning cycle"`,
 	RunE: runCreate,
 }
 
@@ -248,7 +248,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.CreateCycleRequest{
+	req := taskforge.CreateCycleRequest{
 		Name:        cycleName,
 		Description: cycleDescription,
 		StartDate:   cycleStartDate,
@@ -283,7 +283,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.UpdateCycleRequest{}
+	req := taskforge.UpdateCycleRequest{}
 
 	// Interactive mode if no flags provided
 	if cycleName == "" && cycleDescription == "" && cycleStartDate == "" && cycleEndDate == "" {
@@ -431,7 +431,7 @@ func runIssues(cmd *cobra.Command, args []string) error {
 		ID       string            `table:"ID" json:"id"`
 		Sequence int               `table:"#" json:"sequence_id"`
 		Title    string            `table:"TITLE" json:"title"`
-		State    plane.StateOutput `table:"STATE" json:"state"`
+		State    taskforge.StateOutput `table:"STATE" json:"state"`
 		Priority string            `table:"PRIORITY" json:"priority"`
 	}
 
@@ -441,7 +441,7 @@ func runIssues(cmd *cobra.Command, args []string) error {
 			ID:       issue.ID,
 			Sequence: issue.SequenceID,
 			Title:    issue.Name,
-			State:    plane.StateOutputFromIssue(issue),
+			State:    taskforge.StateOutputFromIssue(issue),
 			Priority: issue.Priority,
 		})
 	}

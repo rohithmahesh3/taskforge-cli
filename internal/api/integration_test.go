@@ -10,34 +10,34 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/integrationtest"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/integrationtest"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // Test configuration - set these environment variables to run integration tests
-// PLANE_API_KEY - Your Plane API key
-// PLANE_WORKSPACE - Test workspace slug (default: test-workspace)
-// PLANE_API_HOST - API host URL (default: https://api.plane.so)
+// TASKFORGE_API_KEY - Your TaskForge API key
+// TASKFORGE_WORKSPACE - Test workspace slug (default: test-workspace)
+// TASKFORGE_API_HOST - API host URL (default: https://api.taskforge.app)
 
 func setupIntegrationClient(t *testing.T) *Client {
 	integrationtest.WaitForSlot(t)
 
-	apiKey := os.Getenv("PLANE_API_KEY")
+	apiKey := os.Getenv("TASKFORGE_API_KEY")
 	if apiKey == "" {
-		t.Skip("PLANE_API_KEY not set, skipping integration test")
+		t.Skip("TASKFORGE_API_KEY not set, skipping integration test")
 	}
 
-	workspace := os.Getenv("PLANE_WORKSPACE")
+	workspace := os.Getenv("TASKFORGE_WORKSPACE")
 	if workspace == "" {
 		workspace = "test-workspace"
 	}
 
-	apiHost := os.Getenv("PLANE_API_HOST")
+	apiHost := os.Getenv("TASKFORGE_API_HOST")
 	if apiHost == "" {
-		apiHost = "https://api.plane.so"
+		apiHost = "https://api.taskforge.app"
 	}
 
 	// Set up config
@@ -70,7 +70,7 @@ func TestIntegration_ProjectLifecycle(t *testing.T) {
 	// Create a test project
 	// Use timestamp to avoid name collisions
 	timestamp := time.Now().Unix()
-	createReq := plane.CreateProjectRequest{
+	createReq := taskforge.CreateProjectRequest{
 		Name:        fmt.Sprintf("CLI Test Project %d", timestamp),
 		Identifier:  fmt.Sprintf("CT%d", timestamp%10000),
 		Description: "Test project created by CLI integration tests",
@@ -113,7 +113,7 @@ func TestIntegration_IssueLifecycle(t *testing.T) {
 	t.Logf("Using project: %s (%s)", projects[0].Name, projectID)
 
 	// Create an issue
-	createReq := plane.CreateIssueRequest{
+	createReq := taskforge.CreateIssueRequest{
 		Name:        "Test Issue from CLI",
 		Description: "This is a test issue created by integration tests",
 		Priority:    "medium",
@@ -146,7 +146,7 @@ func TestIntegration_IssueLifecycle(t *testing.T) {
 	assert.Equal(t, issue.ID, issueBySeq.ID)
 
 	// Update issue
-	updateReq := plane.UpdateIssueRequest{
+	updateReq := taskforge.UpdateIssueRequest{
 		Priority: "high",
 	}
 	updatedIssue, err := client.UpdateIssue(projectID, issue.ID, updateReq)

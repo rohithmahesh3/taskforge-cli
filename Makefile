@@ -1,10 +1,10 @@
 .PHONY: build test install clean fmt vet lint setup-hooks
 
-BINARY_NAME=plane-cli
+BINARY_NAME=taskforge
 VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-LDFLAGS=-ldflags "-X github.com/rohithmahesh3/plane-cli/cmd.version=$(VERSION) -X github.com/rohithmahesh3/plane-cli/cmd.commit=$(COMMIT) -X github.com/rohithmahesh3/plane-cli/cmd.date=$(DATE)"
+LDFLAGS=-ldflags "-X github.com/rohithmahesh3/taskforge-cli/cmd.version=$(VERSION) -X github.com/rohithmahesh3/taskforge-cli/cmd.commit=$(COMMIT) -X github.com/rohithmahesh3/taskforge-cli/cmd.date=$(DATE)"
 
 build:
 	go build $(LDFLAGS) -o $(BINARY_NAME) main.go

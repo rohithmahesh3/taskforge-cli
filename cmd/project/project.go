@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +16,7 @@ var ProjectCmd = &cobra.Command{
 	Use:     "project",
 	Aliases: []string{"proj"},
 	Short:   "Manage projects",
-	Long:    `List, create, and manage Plane projects.`,
+	Long:    `List, create, and manage TaskForge projects.`,
 }
 
 var listCmd = &cobra.Command{
@@ -152,7 +152,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	project, err := client.CreateProject(plane.CreateProjectRequest{
+	project, err := client.CreateProject(taskforge.CreateProjectRequest{
 		Name:       name,
 		Identifier: identifier,
 	})

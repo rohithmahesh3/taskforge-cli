@@ -3,15 +3,15 @@ package config
 import (
 	"fmt"
 
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
 var ConfigCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Manage configuration",
-	Long:  `View and modify plane-cli configuration.`,
+	Long:  `View and modify taskforge configuration.`,
 }
 
 var getCmd = &cobra.Command{

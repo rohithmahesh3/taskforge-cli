@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -45,8 +45,8 @@ var createCmd = &cobra.Command{
 	Long: `Create a new intake issue in the current project.
 
 Examples:
-  plane intake create --name "Feature Request" --priority high
-  plane intake create -n "Bug Report" -p urgent`,
+  taskforge intake create --name "Feature Request" --priority high
+  taskforge intake create -n "Bug Report" -p urgent`,
 	RunE: runCreate,
 }
 
@@ -173,7 +173,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.CreateIntakeIssueRequest{}
+	req := taskforge.CreateIntakeIssueRequest{}
 	req.Issue.Name = intakeName
 	req.Issue.Priority = intakePriority
 

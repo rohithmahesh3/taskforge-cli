@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -173,7 +173,7 @@ func runAttachmentEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.UpdateAttachmentRequest{}
+	req := taskforge.UpdateAttachmentRequest{}
 
 	if attachmentName != "" {
 		req.Attributes.Name = attachmentName

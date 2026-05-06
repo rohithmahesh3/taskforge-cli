@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	internalconfig "github.com/rohithmahesh3/plane-cli/internal/config"
+	internalconfig "github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -5,13 +5,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNormalizeStructuredOutputRenamesHTMLFields(t *testing.T) {
-	normalized, err := normalizeStructuredOutput(plane.Issue{
+	normalized, err := normalizeStructuredOutput(taskforge.Issue{
 		Name:                "Probe",
 		DescriptionHTML:     "<h1>Title</h1><p>Hello <strong>world</strong></p>",
 		DescriptionStripped: "Title Hello world",
@@ -28,7 +28,7 @@ func TestNormalizeStructuredOutputRenamesHTMLFields(t *testing.T) {
 }
 
 func TestNormalizeStructuredOutputRenamesCommentHTMLInSlices(t *testing.T) {
-	normalized, err := normalizeStructuredOutput([]plane.Comment{
+	normalized, err := normalizeStructuredOutput([]taskforge.Comment{
 		{
 			ID:          "1",
 			CommentHTML: "<p>Hi <del>there</del></p>",
@@ -61,7 +61,7 @@ func TestFormatterPrintDefaultsToYAML(t *testing.T) {
 	formatter := NewFormatter("", false)
 
 	output, err := captureStdout(t, func() error {
-		return formatter.Print(plane.Issue{
+		return formatter.Print(taskforge.Issue{
 			Name:            "Probe",
 			DescriptionHTML: "<p>Hello <strong>world</strong></p>",
 		})
@@ -76,7 +76,7 @@ func TestFormatterPrintDefaultsToYAML(t *testing.T) {
 func TestFormatterPrintRejectsTable(t *testing.T) {
 	formatter := NewFormatter("table", false)
 
-	err := formatter.Print(plane.Issue{Name: "Probe"})
+	err := formatter.Print(taskforge.Issue{Name: "Probe"})
 	require.Error(t, err)
 	assert.EqualError(t, err, `invalid output format "table": table output has been removed; supported formats are json, yaml`)
 }

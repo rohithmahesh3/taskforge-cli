@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -46,8 +46,8 @@ var createCmd = &cobra.Command{
 	Long: `Create a new label in the current project.
 
 Examples:
-  plane label create --name "Bug" --color "#EF4444"
-  plane label create -n "Feature" -c "#3B82F6" -d "New features"`,
+  taskforge label create --name "Bug" --color "#EF4444"
+  taskforge label create -n "Feature" -c "#3B82F6" -d "New features"`,
 	RunE: runCreate,
 }
 
@@ -195,7 +195,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.CreateLabelRequest{
+	req := taskforge.CreateLabelRequest{
 		Name:        labelName,
 		Description: labelDescription,
 		Color:       labelColor,
@@ -229,7 +229,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	req := plane.UpdateLabelRequest{}
+	req := taskforge.UpdateLabelRequest{}
 
 	// Interactive mode if no flags provided
 	if labelName == "" && labelDescription == "" && labelColor == "" {

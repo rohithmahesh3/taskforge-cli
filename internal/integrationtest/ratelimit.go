@@ -13,12 +13,12 @@ import (
 const minGap = 5 * time.Second
 
 var (
-	lockPath  = filepath.Join(os.TempDir(), "plane-cli-integration-rate-limit.lock")
-	stampPath = filepath.Join(os.TempDir(), "plane-cli-integration-rate-limit.stamp")
+	lockPath  = filepath.Join(os.TempDir(), "taskforge-integration-rate-limit.lock")
+	stampPath = filepath.Join(os.TempDir(), "taskforge-integration-rate-limit.stamp")
 )
 
 // WaitForSlot enforces a minimum delay between integration tests, even across
-// separate `go test` package processes, to avoid Plane API rate limits.
+// separate `go test` package processes, to avoid TaskForge API rate limits.
 func WaitForSlot(t *testing.T) {
 	t.Helper()
 

@@ -5,14 +5,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	cfg "github.com/rohithmahesh3/plane-cli/internal/config"
+	cfg "github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestShouldAllowInvalidOutputConfig(t *testing.T) {
-	root := &cobra.Command{Use: "plane-cli"}
+	root := &cobra.Command{Use: "taskforge"}
 	configCmd := &cobra.Command{Use: "config"}
 	setCmd := &cobra.Command{Use: "set"}
 	configCmd.AddCommand(setCmd)

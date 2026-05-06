@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 // ListAttachments retrieves all attachments for an issue
-func (c *Client) ListAttachments(projectID, issueID string) ([]plane.Attachment, error) {
+func (c *Client) ListAttachments(projectID, issueID string) ([]taskforge.Attachment, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/attachments/", c.Workspace, projectID, issueID)
 
 	body, err := c.GetRaw(path, nil)
@@ -23,14 +23,14 @@ func (c *Client) ListAttachments(projectID, issueID string) ([]plane.Attachment,
 		return nil, err
 	}
 
-	return unmarshalListResponse[plane.Attachment](body)
+	return unmarshalListResponse[taskforge.Attachment](body)
 }
 
 // GetAttachment retrieves a specific attachment
-func (c *Client) GetAttachment(projectID, issueID, attachmentID string) (*plane.Attachment, error) {
+func (c *Client) GetAttachment(projectID, issueID, attachmentID string) (*taskforge.Attachment, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/attachments/%s/", c.Workspace, projectID, issueID, attachmentID)
 
-	var attachment plane.Attachment
+	var attachment taskforge.Attachment
 	if err := c.Get(path, nil, &attachment); err == nil {
 		return &attachment, nil
 	}
@@ -50,7 +50,7 @@ func (c *Client) GetAttachment(projectID, issueID, attachmentID string) (*plane.
 }
 
 // GetUploadCredentials gets credentials for uploading an attachment
-func (c *Client) GetUploadCredentials(projectID, issueID, filename string, size int64) (*plane.UploadCredentials, error) {
+func (c *Client) GetUploadCredentials(projectID, issueID, filename string, size int64) (*taskforge.UploadCredentials, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/attachments/", c.Workspace, projectID, issueID)
 
 	contentType := mime.TypeByExtension(filepath.Ext(filename))
@@ -68,7 +68,7 @@ func (c *Client) GetUploadCredentials(projectID, issueID, filename string, size 
 		Size: size,
 	}
 
-	var credentials plane.UploadCredentials
+	var credentials taskforge.UploadCredentials
 	if err := c.Post(path, req, &credentials); err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (c *Client) GetUploadCredentials(projectID, issueID, filename string, size 
 }
 
 // UploadAttachment uploads a file attachment to an issue
-func (c *Client) UploadAttachment(projectID, issueID, filePath string) (*plane.Attachment, error) {
+func (c *Client) UploadAttachment(projectID, issueID, filePath string) (*taskforge.Attachment, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
@@ -163,10 +163,10 @@ func (c *Client) DeleteAttachment(projectID, issueID, attachmentID string) error
 }
 
 // UpdateAttachment updates an existing attachment
-func (c *Client) UpdateAttachment(projectID, issueID, attachmentID string, req plane.UpdateAttachmentRequest) (*plane.Attachment, error) {
+func (c *Client) UpdateAttachment(projectID, issueID, attachmentID string, req taskforge.UpdateAttachmentRequest) (*taskforge.Attachment, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/attachments/%s/", c.Workspace, projectID, issueID, attachmentID)
 
-	var attachment plane.Attachment
+	var attachment taskforge.Attachment
 	if err := c.Patch(path, req, &attachment); err != nil {
 		return nil, err
 	}
@@ -174,10 +174,10 @@ func (c *Client) UpdateAttachment(projectID, issueID, attachmentID string, req p
 	return &attachment, nil
 }
 
-func (c *Client) completeAttachmentUpload(projectID, issueID, attachmentID string) (plane.Attachment, error) {
+func (c *Client) completeAttachmentUpload(projectID, issueID, attachmentID string) (taskforge.Attachment, error) {
 	attachmentPath := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/attachments/%s/", c.Workspace, projectID, issueID, attachmentID)
 
-	// Plane documents upload completion as a PATCH to the attachment resource.
+	// TaskForge documents upload completion as a PATCH to the attachment resource.
 	attempts := []struct {
 		method string
 		path   string
@@ -202,7 +202,7 @@ func (c *Client) completeAttachmentUpload(projectID, issueID, attachmentID strin
 
 	var lastErr error
 	for _, attempt := range attempts {
-		var attachment plane.Attachment
+		var attachment taskforge.Attachment
 
 		switch attempt.method {
 		case http.MethodPost:
@@ -235,7 +235,7 @@ func (c *Client) completeAttachmentUpload(projectID, issueID, attachmentID strin
 		time.Sleep(1 * time.Second)
 	}
 
-	return plane.Attachment{}, lastErr
+	return taskforge.Attachment{}, lastErr
 }
 
 func buildMultipartPayload(fields map[string]string, fileField, filename string, file io.Reader) (io.Reader, string, error) {

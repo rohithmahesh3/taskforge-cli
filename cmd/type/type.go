@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
 )
 
@@ -149,7 +149,7 @@ func runTypeCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("issue types are disabled for project %s", projectID)
 	}
 
-	req := plane.CreateIssueTypeRequest{
+	req := taskforge.CreateIssueTypeRequest{
 		Name:        typeName,
 		Description: typeDescription,
 		IsActive:    true,

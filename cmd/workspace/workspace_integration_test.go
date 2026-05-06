@@ -10,9 +10,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/integrationtest"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/integrationtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,19 +20,19 @@ import (
 func setupTestEnvironment(t *testing.T) {
 	integrationtest.WaitForSlot(t)
 
-	apiKey := os.Getenv("PLANE_API_KEY")
+	apiKey := os.Getenv("TASKFORGE_API_KEY")
 	if apiKey == "" {
-		t.Skip("PLANE_API_KEY not set, skipping integration test")
+		t.Skip("TASKFORGE_API_KEY not set, skipping integration test")
 	}
 
-	workspace := os.Getenv("PLANE_WORKSPACE")
+	workspace := os.Getenv("TASKFORGE_WORKSPACE")
 	if workspace == "" {
 		workspace = "test-workspace"
 	}
 
-	apiHost := os.Getenv("PLANE_API_HOST")
+	apiHost := os.Getenv("TASKFORGE_API_HOST")
 	if apiHost == "" {
-		apiHost = "https://api.plane.so"
+		apiHost = "https://api.taskforge.app"
 	}
 
 	config.Cfg.APIHost = apiHost
@@ -40,7 +40,7 @@ func setupTestEnvironment(t *testing.T) {
 	config.Cfg.OutputFormat = "json"
 
 	originalService := config.KeyringService
-	config.KeyringService = "plane-cli-cmd-test"
+	config.KeyringService = "taskforge-cmd-test"
 	t.Cleanup(func() { config.KeyringService = originalService; config.DeleteAPIKey() })
 
 	err := config.SetAPIKey(apiKey)

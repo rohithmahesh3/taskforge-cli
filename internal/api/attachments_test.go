@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -32,13 +32,13 @@ func TestGetUploadCredentials(t *testing.T) {
 		assert.Equal(t, "text/plain; charset=utf-8", req.Type)
 		assert.EqualValues(t, 1024, req.Size)
 
-		response := plane.UploadCredentials{
-			UploadData: plane.UploadData{
+		response := taskforge.UploadCredentials{
+			UploadData: taskforge.UploadData{
 				URL:    "https://uploads.example.com",
 				Fields: map[string]string{"key": "attachments/test-file.txt"},
 			},
 			AssetID: "attachment-123",
-			Attachment: plane.Attachment{
+			Attachment: taskforge.Attachment{
 				ID: "attachment-123",
 			},
 		}
@@ -97,13 +97,13 @@ func TestUploadAttachment(t *testing.T) {
 			assert.Equal(t, "upload.txt", req.Name)
 			assert.Equal(t, mime.TypeByExtension(".txt"), req.Type)
 
-			err = json.NewEncoder(w).Encode(plane.UploadCredentials{
-				UploadData: plane.UploadData{
+			err = json.NewEncoder(w).Encode(taskforge.UploadCredentials{
+				UploadData: taskforge.UploadData{
 					URL:    uploadServer.URL,
 					Fields: map[string]string{"key": "attachments/upload.txt"},
 				},
 				AssetID: "attachment-456",
-				Attachment: plane.Attachment{
+				Attachment: taskforge.Attachment{
 					ID: "attachment-456",
 				},
 			})
@@ -114,10 +114,10 @@ func TestUploadAttachment(t *testing.T) {
 			require.NoError(t, err)
 			assert.True(t, req["is_uploaded"])
 
-			err = json.NewEncoder(w).Encode(plane.Attachment{
+			err = json.NewEncoder(w).Encode(taskforge.Attachment{
 				ID:         "attachment-456",
 				IsUploaded: true,
-				Attributes: plane.AttachmentAttributes{
+				Attributes: taskforge.AttachmentAttributes{
 					Name: "upload.txt",
 					Size: 12,
 					Type: "text/plain",
@@ -154,7 +154,7 @@ func TestGetAttachment(t *testing.T) {
 		assert.Equal(t, http.MethodGet, r.Method)
 		assert.Equal(t, "/api/v1/workspaces/test-workspace/projects/test-project/work-items/issue-123/attachments/attachment-456/", r.URL.Path)
 
-		err := json.NewEncoder(w).Encode(plane.Attachment{
+		err := json.NewEncoder(w).Encode(taskforge.Attachment{
 			ID:         "attachment-456",
 			IsUploaded: true,
 		})

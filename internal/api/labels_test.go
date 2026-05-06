@@ -6,11 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rohithmahesh3/plane-cli/pkg/plane"
+	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 )
 
 func TestListLabels(t *testing.T) {
-	mockLabels := []plane.Label{
+	mockLabels := []taskforge.Label{
 		{ID: "label-1", Name: "Bug", Color: "#EF4444"},
 		{ID: "label-2", Name: "Feature", Color: "#3B82F6"},
 	}
@@ -24,7 +24,7 @@ func TestListLabels(t *testing.T) {
 		}
 
 		response := struct {
-			Results []plane.Label `json:"results"`
+			Results []taskforge.Label `json:"results"`
 		}{
 			Results: mockLabels,
 		}
@@ -59,7 +59,7 @@ func TestCreateLabel(t *testing.T) {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
 
-		var req plane.CreateLabelRequest
+		var req taskforge.CreateLabelRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request: %v", err)
 		}
@@ -68,7 +68,7 @@ func TestCreateLabel(t *testing.T) {
 			t.Errorf("Expected name 'High Priority', got '%s'", req.Name)
 		}
 
-		label := plane.Label{
+		label := taskforge.Label{
 			ID:    "new-label-id",
 			Name:  req.Name,
 			Color: req.Color,
@@ -86,7 +86,7 @@ func TestCreateLabel(t *testing.T) {
 		Workspace:  "test-workspace",
 	}
 
-	req := plane.CreateLabelRequest{
+	req := taskforge.CreateLabelRequest{
 		Name:  "High Priority",
 		Color: "#DC2626",
 	}

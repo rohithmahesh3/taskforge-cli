@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rohithmahesh3/plane-cli/internal/api"
-	"github.com/rohithmahesh3/plane-cli/internal/config"
-	"github.com/rohithmahesh3/plane-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/internal/api"
+	"github.com/rohithmahesh3/taskforge-cli/internal/config"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -19,28 +19,28 @@ var (
 var AuthCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Authentication commands",
-	Long:  `Manage authentication with Plane.`,
+	Long:  `Manage authentication with TaskForge.`,
 }
 
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Authenticate with Plane",
-	Long: `Authenticate with Plane using an API key.
+	Short: "Authenticate with TaskForge",
+	Long: `Authenticate with TaskForge using an API key.
 
-You can generate an API key from your Plane workspace settings:
+You can generate an API key from your TaskForge workspace settings:
 1. Go to Profile Settings → Personal Access Tokens
 2. Click "Add personal access token"
 3. Copy the generated token
 
 Example:
-  plane auth login
-  plane auth login --token YOUR_API_KEY --workspace my-workspace`,
+  taskforge auth login
+  taskforge auth login --token YOUR_API_KEY --workspace my-workspace`,
 	RunE: runLogin,
 }
 
 var logoutCmd = &cobra.Command{
 	Use:   "logout",
-	Short: "Logout from Plane",
+	Short: "Logout from TaskForge",
 	Long:  `Remove stored credentials and configuration.`,
 	RunE:  runLogout,
 }
@@ -66,7 +66,7 @@ func init() {
 	AuthCmd.AddCommand(whoamiCmd)
 
 	loginCmd.Flags().StringVar(&token, "token", "", "API key (will prompt if not provided)")
-	loginCmd.Flags().StringVar(&apiHost, "api-host", "", "Plane API host URL (will prompt if not provided)")
+	loginCmd.Flags().StringVar(&apiHost, "api-host", "", "TaskForge API host URL (will prompt if not provided)")
 	loginCmd.Flags().StringVar(&workspace, "workspace", "", "Default workspace slug")
 }
 
@@ -74,7 +74,7 @@ func runLogin(cmd *cobra.Command, args []string) error {
 	// Interactive prompts if flags not provided
 	if token == "" {
 		prompt := &survey.Password{
-			Message: "Enter your Plane API key:",
+			Message: "Enter your TaskForge API key:",
 			Help:    "You can generate an API key from Profile Settings → Personal Access Tokens",
 		}
 		if err := survey.AskOne(prompt, &token); err != nil {
@@ -88,9 +88,9 @@ func runLogin(cmd *cobra.Command, args []string) error {
 
 	if apiHost == "" {
 		prompt := &survey.Input{
-			Message: "Enter your Plane API host:",
+			Message: "Enter your TaskForge API host:",
 			Default: config.DefaultAPIHost,
-			Help:    "The URL of your Plane instance (e.g., https://api.plane.so)",
+			Help:    "The URL of your Plane instance (e.g., https://api.taskforge.app)",
 		}
 		if err := survey.AskOne(prompt, &apiHost); err != nil {
 			return err
@@ -165,7 +165,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	apiKey, err := config.GetAPIKey()
 	if err != nil || apiKey == "" {
 		output.Error("Not authenticated")
-		output.Info("Run 'plane auth login' to authenticate")
+		output.Info("Run 'taskforge auth login' to authenticate")
 		return nil
 	}
 

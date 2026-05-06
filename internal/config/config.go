@@ -5,20 +5,20 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/rohithmahesh3/plane-cli/internal/output"
+	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/spf13/viper"
 	"github.com/zalando/go-keyring"
 	"gopkg.in/yaml.v3"
 )
 
 const (
-	AppName        = "plane-cli"
+	AppName        = "taskforge"
 	ConfigFileName = "config"
-	DefaultAPIHost = "https://api.plane.so"
+	DefaultAPIHost = "https://api.taskforge.app"
 )
 
 var (
-	KeyringService = "plane-cli"
+	KeyringService = "taskforge"
 	KeyringUser    = "api-key"
 )
 
@@ -112,7 +112,7 @@ func loadLocalConfig() {
 	}
 
 	for {
-		settingsPath := filepath.Join(dir, ".plane", "settings.yaml")
+		settingsPath := filepath.Join(dir, ".taskforge", "settings.yaml")
 		if data, err := os.ReadFile(settingsPath); err == nil {
 			var local LocalConfig
 			if err := yaml.Unmarshal(data, &local); err == nil {
