@@ -246,11 +246,11 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	req := taskforge.CreateIssueRequest{
-		Name:            issueTitle,
-		DescriptionHTML: renderDescriptionHTML(issueDescription),
-		Priority:        issuePriority,
-		Assignees:       assignees,
-		Labels:          issueLabels,
+		Name:        issueTitle,
+		Description: issueDescription,
+		Priority:    issuePriority,
+		Assignees:   assignees,
+		Labels:      issueLabels,
 	}
 
 	issue, err := client.CreateIssue(projectID, req)
@@ -313,7 +313,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 			req.Name = issueTitle
 		}
 		if issueDescription != "" {
-			req.DescriptionHTML = renderDescriptionHTML(issueDescription)
+			req.Description = issueDescription
 		}
 		if issuePriority != "" {
 			req.Priority = issuePriority

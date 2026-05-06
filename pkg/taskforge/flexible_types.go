@@ -225,17 +225,12 @@ type StateOutput struct {
 	Name string `json:"state_name"`
 }
 
-// StateOutputFromIssue builds structured state output from an issue, with fallback
-// to state_name when state is returned as a UUID.
+// StateOutputFromIssue builds structured state output from an issue.
+// The API now always returns state as {id, name}.
 func StateOutputFromIssue(issue Issue) StateOutput {
-	name := issue.State.Name
-	if name == "" {
-		name = issue.StateName
-	}
-
 	return StateOutput{
 		ID:   issue.State.ID,
-		Name: name,
+		Name: issue.State.Name,
 	}
 }
 

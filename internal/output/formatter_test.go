@@ -10,11 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNormalizeStructuredOutputRenamesHTMLFields(t *testing.T) {
+func TestNormalizeStructuredOutputPassesThroughMarkdownFields(t *testing.T) {
 	normalized, err := normalizeStructuredOutput(taskforge.Issue{
-		Name:                "Probe",
-		DescriptionHTML:     "<h1>Title</h1><p>Hello <strong>world</strong></p>",
-		DescriptionStripped: "Title Hello world",
+		Name:        "Probe",
+		Description: "# Title\n\nHello **world**",
 	})
 	require.NoError(t, err)
 
@@ -22,17 +21,16 @@ func TestNormalizeStructuredOutputRenamesHTMLFields(t *testing.T) {
 	require.True(t, ok)
 
 	assert.Equal(t, "Probe", record["name"])
-	assert.Equal(t, "Title Hello world", record["description_stripped"])
+	assert.Equal(t, "# Title\n\nHello **world**", record["description"])
 	assert.NotContains(t, record, "description_html")
-	assert.Equal(t, "# Title\n\nHello **world**", record["description_markdown"])
+	assert.NotContains(t, record, "description_markdown")
 }
 
-func TestNormalizeStructuredOutputRenamesCommentHTMLInSlices(t *testing.T) {
+func TestNormalizeStructuredOutputPassesThroughComments(t *testing.T) {
 	normalized, err := normalizeStructuredOutput([]taskforge.Comment{
 		{
-			ID:          "1",
-			CommentHTML: "<p>Hi <del>there</del></p>",
-			CommentJSON: `{"x":1}`,
+			ID:      "1",
+			Comment: "Hi ~~there~~",
 		},
 	})
 	require.NoError(t, err)
@@ -45,16 +43,8 @@ func TestNormalizeStructuredOutputRenamesCommentHTMLInSlices(t *testing.T) {
 	require.True(t, ok)
 
 	assert.NotContains(t, record, "comment_html")
-	assert.Equal(t, "Hi ~~there~~", record["comment_markdown"])
-	assert.Equal(t, `{"x":1}`, record["comment_json"])
-}
-
-func TestHTMLToMarkdownConvertsTables(t *testing.T) {
-	markdown, err := htmlToMarkdown("<table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>")
-	require.NoError(t, err)
-
-	assert.Contains(t, markdown, "| A | B |")
-	assert.Contains(t, markdown, "| 1 | 2 |")
+	assert.NotContains(t, record, "comment_stripped")
+	assert.Equal(t, "Hi ~~there~~", record["comment"])
 }
 
 func TestFormatterPrintDefaultsToYAML(t *testing.T) {
@@ -62,14 +52,14 @@ func TestFormatterPrintDefaultsToYAML(t *testing.T) {
 
 	output, err := captureStdout(t, func() error {
 		return formatter.Print(taskforge.Issue{
-			Name:            "Probe",
-			DescriptionHTML: "<p>Hello <strong>world</strong></p>",
+			Name:        "Probe",
+			Description: "Hello **world**",
 		})
 	})
 	require.NoError(t, err)
 
 	assert.Contains(t, output, "name: Probe")
-	assert.Contains(t, output, "description_markdown: Hello **world**")
+	assert.Contains(t, output, "description: Hello **world**")
 	assert.NotContains(t, output, "description_html")
 }
 

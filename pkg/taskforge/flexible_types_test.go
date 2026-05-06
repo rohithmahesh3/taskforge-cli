@@ -2,13 +2,12 @@ package taskforge
 
 import "testing"
 
-func TestStateOutputFromIssuePrefersExpandedStateName(t *testing.T) {
+func TestStateOutputFromIssueWithExpandedState(t *testing.T) {
 	issue := Issue{
 		State: FlexibleState{
 			ID:   "state-1",
 			Name: "Done",
 		},
-		StateName: "Fallback",
 	}
 
 	got := StateOutputFromIssue(issue)
@@ -20,20 +19,16 @@ func TestStateOutputFromIssuePrefersExpandedStateName(t *testing.T) {
 	}
 }
 
-func TestStateOutputFromIssueFallsBackToStateName(t *testing.T) {
+func TestStateOutputFromIssueWithEmptyState(t *testing.T) {
 	issue := Issue{
-		State: FlexibleState{
-			ID:   "state-2",
-			Name: "",
-		},
-		StateName: "Todo",
+		State: FlexibleState{}, // zero value = no state
 	}
 
 	got := StateOutputFromIssue(issue)
-	if got.ID != "state-2" {
-		t.Fatalf("expected state id state-2, got %q", got.ID)
+	if got.ID != "" {
+		t.Fatalf("expected empty state id, got %q", got.ID)
 	}
-	if got.Name != "Todo" {
-		t.Fatalf("expected state name Todo, got %q", got.Name)
+	if got.Name != "" {
+		t.Fatalf("expected empty state name, got %q", got.Name)
 	}
 }

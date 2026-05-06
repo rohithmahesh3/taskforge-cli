@@ -155,7 +155,7 @@ func TestCommentsLifecycle(t *testing.T) {
 	defer cleanupTestIssue(t, client, issue.ID)
 
 	comment, err := client.CreateComment(testProjectID, issue.ID, taskforge.CreateCommentRequest{
-		CommentHTML: "<p>Test comment from integration test</p>",
+		Comment: "Test comment from integration test",
 	})
 	require.NoError(t, err)
 	assert.NotEmpty(t, comment.ID)
@@ -170,10 +170,10 @@ func TestCommentsLifecycle(t *testing.T) {
 	assert.GreaterOrEqual(t, len(comments), 1)
 
 	updatedComment, err := client.UpdateComment(testProjectID, issue.ID, comment.ID, taskforge.UpdateCommentRequest{
-		CommentHTML: "<p>Updated test comment</p>",
+		Comment: "Updated test comment",
 	})
 	require.NoError(t, err)
-	assert.Contains(t, updatedComment.CommentHTML, "Updated")
+	assert.Contains(t, updatedComment.Comment, "Updated")
 
 	err = client.DeleteComment(testProjectID, issue.ID, comment.ID)
 	require.NoError(t, err)
@@ -826,24 +826,24 @@ func TestIssueWithEstimatePoint(t *testing.T) {
 }
 
 // ============================================
-// ISSUE WITH HTML DESCRIPTION TESTS
+// ISSUE WITH MARKDOWN DESCRIPTION TESTS
 // ============================================
 
-func TestIssueWithHTMLDescription(t *testing.T) {
+func TestIssueWithMarkdownDescription(t *testing.T) {
 	client := setupComprehensiveTest(t)
 
 	issue, err := client.CreateIssue(testProjectID, taskforge.CreateIssueRequest{
-		Name:            fmt.Sprintf("HTML Desc Test %d", time.Now().UnixNano()),
-		DescriptionHTML: "<h1>Test</h1><p>This is <strong>HTML</strong> description</p>",
-		Priority:        "medium",
+		Name:        fmt.Sprintf("Markdown Desc Test %d", time.Now().UnixNano()),
+		Description: "# Test\n\nThis is **markdown** description",
+		Priority:    "medium",
 	})
 	require.NoError(t, err)
 	defer cleanupTestIssue(t, client, issue.ID)
 
 	fetched, err := client.GetIssue(testProjectID, issue.ID)
 	require.NoError(t, err)
-	assert.NotEmpty(t, fetched.DescriptionHTML)
-	t.Logf("Issue created with HTML description")
+	assert.NotEmpty(t, fetched.Description)
+	t.Logf("Issue created with markdown description")
 }
 
 // ============================================

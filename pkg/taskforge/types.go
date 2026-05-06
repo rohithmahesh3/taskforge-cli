@@ -37,11 +37,10 @@ type IconProp struct {
 
 type Issue struct {
 	ID                  string          `json:"id"`
+	Identifier          string          `json:"identifier,omitempty"`
 	SequenceID          int             `json:"sequence_id"`
 	Name                string          `json:"name"`
 	Description         string          `json:"description,omitempty"`
-	DescriptionHTML     string          `json:"description_html,omitempty"`
-	DescriptionStripped string          `json:"description_stripped,omitempty"`
 	State               FlexibleState   `json:"state"`
 	Priority            string          `json:"priority"`
 	Assignees           []FlexibleUser  `json:"assignees,omitempty"`
@@ -62,11 +61,6 @@ type Issue struct {
 	WorkspaceID         string          `json:"workspace,omitempty"`
 	IsDraft             bool            `json:"is_draft,omitempty"`
 	ArchivedAt          string          `json:"archived_at,omitempty"`
-	Sequence            int             `json:"sequence,omitempty"`
-	SortOrder           float64         `json:"sort_order,omitempty"`
-	StateName           string          `json:"state_name,omitempty"`
-	StateGroup          string          `json:"state_group,omitempty"`
-	PriorityValue       int             `json:"priority_value,omitempty"`
 }
 
 type State struct {
@@ -172,8 +166,6 @@ type Module struct {
 	ID              string    `json:"id"`
 	Name            string    `json:"name"`
 	Description     string    `json:"description,omitempty"`
-	DescriptionHTML string    `json:"description_html,omitempty"`
-	DescriptionText string    `json:"description_text,omitempty"`
 	StartDate       string    `json:"start_date,omitempty"`
 	TargetDate      string    `json:"target_date,omitempty"`
 	Status          string    `json:"status,omitempty"`
@@ -211,8 +203,6 @@ type UpdateModuleRequest struct {
 type CreateIssueRequest struct {
 	Name            string   `json:"name"`
 	Description     string   `json:"description,omitempty"`
-	DescriptionHTML string   `json:"description_html,omitempty"`
-	State           string   `json:"state,omitempty"`
 	Priority        string   `json:"priority,omitempty"`
 	Assignees       []string `json:"assignees,omitempty"`
 	Labels          []string `json:"labels,omitempty"`
@@ -227,7 +217,6 @@ type CreateIssueRequest struct {
 type UpdateIssueRequest struct {
 	Name            string   `json:"name,omitempty"`
 	Description     string   `json:"description,omitempty"`
-	DescriptionHTML string   `json:"description_html,omitempty"`
 	State           string   `json:"state,omitempty"`
 	Priority        string   `json:"priority,omitempty"`
 	Assignees       []string `json:"assignees,omitempty"`

@@ -92,13 +92,12 @@ func runCommentList(cmd *cobra.Command, args []string) error {
 		ID      string `table:"ID" json:"id"`
 		Author  string `table:"AUTHOR" json:"actor"`
 		Access  string `table:"ACCESS" json:"access"`
-		Comment string `table:"COMMENT" json:"comment_stripped"`
+		Comment string `table:"COMMENT" json:"comment"`
 	}
 
 	var outputs []commentOutput
 	for _, c := range comments {
-		// Strip HTML for display
-		commentText := c.CommentStripped
+		commentText := c.Comment
 		if commentText == "" {
 			commentText = "(empty)"
 		}
@@ -158,8 +157,8 @@ func runCommentAdd(cmd *cobra.Command, args []string) error {
 	}
 
 	req := taskforge.CreateCommentRequest{
-		CommentHTML: renderDescriptionHTML(commentText),
-		Access:      commentAccess,
+		Comment: commentText,
+		Access:  commentAccess,
 	}
 
 	comment, err := client.CreateComment(projectID, issueID, req)

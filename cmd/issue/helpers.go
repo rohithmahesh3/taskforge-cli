@@ -1,19 +1,12 @@
 package issue
 
 import (
-	"bytes"
-	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/extension"
-	"github.com/yuin/goldmark/renderer/html"
 )
-
-var codeBlockPattern = regexp.MustCompile(`(?s)<pre><code([^>]*)>(.*?)</code></pre>`)
 
 func resolveIssue(client *api.Client, projectID, ref string) (*taskforge.Issue, error) {
 	if seqID, err := strconv.Atoi(strings.TrimSpace(ref)); err == nil {
@@ -60,58 +53,4 @@ func looksLikeUUID(s string) bool {
 	}
 
 	return true
-}
-
-// renderDescriptionHTML converts Markdown text to HTML.
-// If the input already appears to be HTML (starts with "<"), it returns it unchanged.
-func renderDescriptionHTML(input string) string {
-	normalized := strings.TrimSpace(strings.ReplaceAll(input, "\r\n", "\n"))
-	if normalized == "" {
-		return ""
-	}
-
-	// If input already looks like HTML, return as-is
-	if strings.HasPrefix(normalized, "<") {
-		return normalized
-	}
-
-	// Configure goldmark with common extensions for GitHub-flavored Markdown
-	md := goldmark.New(
-		goldmark.WithExtensions(
-			extension.Table,
-			extension.Strikethrough,
-			extension.Linkify,
-			extension.TaskList,
-		),
-		goldmark.WithRendererOptions(
-			html.WithHardWraps(),
-			html.WithXHTML(),
-		),
-	)
-
-	var buf bytes.Buffer
-	if err := md.Convert([]byte(normalized), &buf); err != nil {
-		// Fallback: return escaped text wrapped in paragraph if parsing fails
-		return "<p>" + normalized + "</p>"
-	}
-
-	return normalizeCodeBlockBlankLines(buf.String())
-}
-
-func normalizeCodeBlockBlankLines(rendered string) string {
-	return codeBlockPattern.ReplaceAllStringFunc(rendered, func(block string) string {
-		matches := codeBlockPattern.FindStringSubmatch(block)
-		if len(matches) != 3 {
-			return block
-		}
-
-		lines := strings.Split(matches[2], "\n")
-		for i := 0; i < len(lines)-1; i++ {
-			if lines[i] == "" {
-				lines[i] = "<br />"
-			}
-		}
-
-		return "<pre><code" + matches[1] + ">" + strings.Join(lines, "\n") + "</code></pre>"
-	})
 }
