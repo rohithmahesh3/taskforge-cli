@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -38,6 +39,20 @@ type Pagination struct {
 type Response struct {
 	Pagination
 	Results json.RawMessage `json:"results"`
+}
+
+type APIError struct {
+	StatusCode int             `json:"status_code"`
+	Message    string          `json:"message"`
+	RawBody    string          `json:"raw_body"`
+	Conflicts  json.RawMessage `json:"conflicts,omitempty"`
+}
+
+func (e *APIError) Error() string {
+	if e.Message != "" {
+		return fmt.Sprintf("API error (status %d): %s", e.StatusCode, e.Message)
+	}
+	return fmt.Sprintf("API error (status %d): %s", e.StatusCode, e.RawBody)
 }
 
 func NewClient() (*Client, error) {
@@ -129,7 +144,24 @@ func (c *Client) DoRaw(req *http.Request) ([]byte, error) {
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("API error (status %d): %s", resp.StatusCode, string(body))
+		apiErr := &APIError{
+			StatusCode: resp.StatusCode,
+			RawBody:    string(body),
+		}
+		var parsed struct {
+			Error     string          `json:"error"`
+			Message   string          `json:"message"`
+			Conflicts json.RawMessage `json:"conflicts"`
+		}
+		if err := json.Unmarshal(body, &parsed); err == nil {
+			if parsed.Error != "" {
+				apiErr.Message = parsed.Error
+			} else if parsed.Message != "" {
+				apiErr.Message = parsed.Message
+			}
+			apiErr.Conflicts = parsed.Conflicts
+		}
+		return nil, apiErr
 	}
 
 	return body, nil
@@ -204,5 +236,9 @@ func isAPIStatusError(err error, statusCode int) bool {
 		return false
 	}
 
+	var apiErr *APIError
+	if errors.As(err, &apiErr) {
+		return apiErr.StatusCode == statusCode
+	}
 	return strings.Contains(err.Error(), fmt.Sprintf("status %d", statusCode))
 }

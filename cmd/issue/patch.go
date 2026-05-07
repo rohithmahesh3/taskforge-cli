@@ -2,6 +2,7 @@ package issue
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -26,20 +27,20 @@ var (
 func init() {
 	patchCmd := &cobra.Command{
 		Use:   "patch <issue-id>",
-		Short: "Apply RFC 6902-style JSON Patch to an issue",
+		Short: "Apply text patch operations to an issue",
 		Long: `Apply JSON Patch operations to an issue's fields.
 
 Operations:
-  - replace: Replace a field value entirely
+  - replace: Replace exact old text with new text
   - diff:    Apply a unified diff to a text field
   - insert:  Insert text after an anchor point in a field
-  - delete:  Delete text before an anchor point in a field
+  - delete:  Delete exact old text from a field
 
 Examples:
-  taskforge issue patch TF-1 --op replace --field description --value "new text"
+  taskforge issue patch TF-1 --op replace --field description --actual "old text" --value "new text"
   taskforge issue patch TF-1 --op diff --field description --diff "@@ -1,3 +1,4 @@..."
   taskforge issue patch TF-1 --op insert --field description --after "anchor" --value "text"
-  taskforge issue patch TF-1 --op delete --field description --before "anchor"
+  taskforge issue patch TF-1 --op delete --field description --actual "text to delete"
   taskforge issue patch TF-1 --file patches.json`,
 		Args: cobra.ExactArgs(1),
 		RunE: runPatch,
@@ -50,8 +51,8 @@ Examples:
 	patchCmd.Flags().StringVar(&patchValue, "value", "", "Value for replace/insert operations")
 	patchCmd.Flags().StringVar(&patchDiff, "diff", "", "Unified diff string for diff operation")
 	patchCmd.Flags().StringVar(&patchAfter, "after", "", "Anchor text after which to insert")
-	patchCmd.Flags().StringVar(&patchBefore, "before", "", "Anchor text before which to delete")
-	patchCmd.Flags().StringVar(&patchActual, "actual", "", "Current value of the field (safety precondition for replace/diff operations)")
+	patchCmd.Flags().StringVar(&patchBefore, "before", "", "Legacy delete anchor input (auto-mapped to old text when possible)")
+	patchCmd.Flags().StringVar(&patchActual, "actual", "", "Current/expected text precondition (required for replace/delete)")
 	patchCmd.Flags().StringVar(&patchFile, "file", "", "Read patches from a JSON file")
 
 	IssueCmd.AddCommand(patchCmd)
@@ -95,6 +96,10 @@ func runPatch(cmd *cobra.Command, args []string) error {
 
 	issue, err := client.PatchIssue(projectID, issueID, patches)
 	if err != nil {
+		var apiErr *api.APIError
+		if errors.As(err, &apiErr) && apiErr.StatusCode == 409 && len(apiErr.Conflicts) > 0 {
+			return fmt.Errorf("failed to apply patch: %s (conflicts: %s)", apiErr.Message, string(apiErr.Conflicts))
+		}
 		return fmt.Errorf("failed to apply patch: %w", err)
 	}
 
@@ -111,13 +116,16 @@ func buildPatchFromFlags() ([]taskforge.PatchOp, error) {
 	}
 
 	p := taskforge.PatchOp{
-		Op:     patchOp,
-		Field:  patchField,
-		Value:  patchValue,
-		Diff:   patchDiff,
-		After:  patchAfter,
-		Before: patchBefore,
-		Old:    patchActual,
+		Op:      patchOp,
+		Field:   patchField,
+		After:   patchAfter,
+		Old:     patchActual,
+		New:     patchValue,
+		Content: patchValue,
+		Unified: patchDiff,
+		Value:   patchValue,
+		Diff:    patchDiff,
+		Before:  patchBefore,
 	}
 
 	// Validate the operation has required fields
@@ -125,6 +133,9 @@ func buildPatchFromFlags() ([]taskforge.PatchOp, error) {
 	case "replace":
 		if patchValue == "" {
 			return nil, fmt.Errorf("--value is required for replace operation")
+		}
+		if patchActual == "" {
+			return nil, fmt.Errorf("--actual is required for replace operation")
 		}
 	case "diff":
 		if patchDiff == "" {
@@ -138,14 +149,17 @@ func buildPatchFromFlags() ([]taskforge.PatchOp, error) {
 			return nil, fmt.Errorf("--after is required for insert operation")
 		}
 	case "delete":
-		if patchBefore == "" {
-			return nil, fmt.Errorf("--before is required for delete operation")
+		if patchActual == "" && patchBefore == "" {
+			return nil, fmt.Errorf("--actual is required for delete operation")
+		}
+		if p.Old == "" {
+			p.Old = patchBefore
 		}
 	default:
 		return nil, fmt.Errorf("unsupported operation %q: must be one of replace, diff, insert, delete", patchOp)
 	}
 
-	return []taskforge.PatchOp{p}, nil
+	return normalizePatches([]taskforge.PatchOp{p}), nil
 }
 
 func loadPatchesFromFile(path string) ([]taskforge.PatchOp, error) {
@@ -166,5 +180,31 @@ func loadPatchesFromFile(path string) ([]taskforge.PatchOp, error) {
 		return nil, fmt.Errorf("file must contain a JSON array of patch operations or a JSON object with a 'patches' field")
 	}
 
-	return patches, nil
+	return normalizePatches(patches), nil
+}
+
+func normalizePatches(patches []taskforge.PatchOp) []taskforge.PatchOp {
+	out := make([]taskforge.PatchOp, 0, len(patches))
+	for _, p := range patches {
+		switch p.Op {
+		case "replace":
+			if p.New == "" && p.Value != "" {
+				p.New = p.Value
+			}
+		case "insert":
+			if p.Content == "" && p.Value != "" {
+				p.Content = p.Value
+			}
+		case "delete":
+			if p.Old == "" && p.Before != "" {
+				p.Old = p.Before
+			}
+		case "diff":
+			if p.Unified == "" && p.Diff != "" {
+				p.Unified = p.Diff
+			}
+		}
+		out = append(out, p)
+	}
+	return out
 }

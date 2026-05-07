@@ -39,31 +39,31 @@ type IconProp struct {
 }
 
 type Issue struct {
-	ID                  string          `json:"id"`
-	Identifier          string          `json:"identifier,omitempty"`
-	SequenceID          int             `json:"sequence_id"`
-	Name                string          `json:"name"`
-	Description         string          `json:"description,omitempty"`
-	State               FlexibleState   `json:"state"`
-	Priority            string          `json:"priority"`
-	Assignees           []FlexibleUser  `json:"assignees,omitempty"`
-	Labels              []FlexibleLabel `json:"labels,omitempty"`
-	CycleID             string          `json:"cycle_id,omitempty"`
-	ModuleID            string          `json:"module_id,omitempty"`
-	Parent              string          `json:"parent,omitempty"`
-	StartDate           string          `json:"start_date,omitempty"`
-	TargetDate          string          `json:"target_date,omitempty"`
-	EstimatePoint       int             `json:"estimate_point,omitempty"`
-	Type                string          `json:"type,omitempty"`
-	CompletedAt         *time.Time      `json:"completed_at,omitempty"`
-	CreatedAt           time.Time       `json:"created_at"`
-	UpdatedAt           time.Time       `json:"updated_at"`
-	CreatedBy           string          `json:"created_by,omitempty"`
-	UpdatedBy           string          `json:"updated_by,omitempty"`
-	ProjectID           string          `json:"project,omitempty"`
-	WorkspaceID         string          `json:"workspace,omitempty"`
-	IsDraft             bool            `json:"is_draft,omitempty"`
-	ArchivedAt          string          `json:"archived_at,omitempty"`
+	ID            string          `json:"id"`
+	Identifier    string          `json:"identifier,omitempty"`
+	SequenceID    int             `json:"sequence_id"`
+	Name          string          `json:"name"`
+	Description   string          `json:"description,omitempty"`
+	State         FlexibleState   `json:"state"`
+	Priority      string          `json:"priority"`
+	Assignees     []FlexibleUser  `json:"assignees,omitempty"`
+	Labels        []FlexibleLabel `json:"labels,omitempty"`
+	CycleID       string          `json:"cycle_id,omitempty"`
+	ModuleID      string          `json:"module_id,omitempty"`
+	Parent        string          `json:"parent,omitempty"`
+	StartDate     string          `json:"start_date,omitempty"`
+	TargetDate    string          `json:"target_date,omitempty"`
+	EstimatePoint int             `json:"estimate_point,omitempty"`
+	Type          string          `json:"type,omitempty"`
+	CompletedAt   *time.Time      `json:"completed_at,omitempty"`
+	CreatedAt     time.Time       `json:"created_at"`
+	UpdatedAt     time.Time       `json:"updated_at"`
+	CreatedBy     string          `json:"created_by,omitempty"`
+	UpdatedBy     string          `json:"updated_by,omitempty"`
+	ProjectID     string          `json:"project,omitempty"`
+	WorkspaceID   string          `json:"workspace,omitempty"`
+	IsDraft       bool            `json:"is_draft,omitempty"`
+	ArchivedAt    string          `json:"archived_at,omitempty"`
 }
 
 type State struct {
@@ -166,17 +166,17 @@ type UpdateCycleRequest struct {
 }
 
 type Module struct {
-	ID              string    `json:"id"`
-	Name            string    `json:"name"`
-	Description     string    `json:"description,omitempty"`
-	StartDate       string    `json:"start_date,omitempty"`
-	TargetDate      string    `json:"target_date,omitempty"`
-	Status          string    `json:"status,omitempty"`
-	Lead            string    `json:"lead,omitempty"`
-	Members         []string  `json:"members,omitempty"`
-	CreatedAt       time.Time `json:"created_at,omitempty"`
-	UpdatedAt       time.Time `json:"updated_at,omitempty"`
-	ArchivedAt      string    `json:"archived_at,omitempty"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description,omitempty"`
+	StartDate   string    `json:"start_date,omitempty"`
+	TargetDate  string    `json:"target_date,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	Lead        string    `json:"lead,omitempty"`
+	Members     []string  `json:"members,omitempty"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+	ArchivedAt  string    `json:"archived_at,omitempty"`
 }
 
 type CreateModuleRequest struct {
@@ -204,32 +204,32 @@ type UpdateModuleRequest struct {
 }
 
 type CreateIssueRequest struct {
-	Name            string   `json:"name"`
-	Description     string   `json:"description,omitempty"`
-	Priority        string   `json:"priority,omitempty"`
-	Assignees       []string `json:"assignees,omitempty"`
-	Labels          []string `json:"labels,omitempty"`
-	Parent          string   `json:"parent,omitempty"`
-	EstimatePoint   int      `json:"estimate_point,omitempty"`
-	Type            string   `json:"type,omitempty"`
-	Module          string   `json:"module,omitempty"`
-	StartDate       string   `json:"start_date,omitempty"`
-	TargetDate      string   `json:"target_date,omitempty"`
+	Name          string   `json:"name"`
+	Description   string   `json:"description,omitempty"`
+	Priority      string   `json:"priority,omitempty"`
+	Assignees     []string `json:"assignees,omitempty"`
+	Labels        []string `json:"labels,omitempty"`
+	Parent        string   `json:"parent,omitempty"`
+	EstimatePoint int      `json:"estimate_point,omitempty"`
+	Type          string   `json:"type,omitempty"`
+	Module        string   `json:"module,omitempty"`
+	StartDate     string   `json:"start_date,omitempty"`
+	TargetDate    string   `json:"target_date,omitempty"`
 }
 
 type UpdateIssueRequest struct {
-	Name            string   `json:"name,omitempty"`
-	Description     string   `json:"description,omitempty"`
-	State           string   `json:"state,omitempty"`
-	Priority        string   `json:"priority,omitempty"`
-	Assignees       []string `json:"assignees,omitempty"`
-	Labels          []string `json:"labels,omitempty"`
-	Parent          string   `json:"parent,omitempty"`
-	EstimatePoint   int      `json:"estimate_point,omitempty"`
-	Type            string   `json:"type,omitempty"`
-	Module          string   `json:"module,omitempty"`
-	StartDate       string   `json:"start_date,omitempty"`
-	TargetDate      string   `json:"target_date,omitempty"`
+	Name          string   `json:"name,omitempty"`
+	Description   string   `json:"description,omitempty"`
+	State         string   `json:"state,omitempty"`
+	Priority      string   `json:"priority,omitempty"`
+	Assignees     []string `json:"assignees,omitempty"`
+	Labels        []string `json:"labels,omitempty"`
+	Parent        string   `json:"parent,omitempty"`
+	EstimatePoint int      `json:"estimate_point,omitempty"`
+	Type          string   `json:"type,omitempty"`
+	Module        string   `json:"module,omitempty"`
+	StartDate     string   `json:"start_date,omitempty"`
+	TargetDate    string   `json:"target_date,omitempty"`
 }
 
 type CreateProjectRequest struct {
@@ -316,19 +316,19 @@ func (u UploadCredentials) UploadTarget() UploadData {
 }
 
 type IntakeIssue struct {
-	ID          string    `json:"id"`
-	Status      int       `json:"status"`
-	SnoozedTill string    `json:"snoozed_till,omitempty"`
-	Source      string    `json:"source,omitempty"`
-	Inbox       string    `json:"inbox,omitempty"`
+	ID          string        `json:"id"`
+	Status      int           `json:"status"`
+	SnoozedTill string        `json:"snoozed_till,omitempty"`
+	Source      string        `json:"source,omitempty"`
+	Inbox       string        `json:"inbox,omitempty"`
 	Issue       FlexibleState `json:"issue,omitempty"`
-	DuplicateTo string    `json:"duplicate_to,omitempty"`
-	Project     string    `json:"project,omitempty"`
-	Workspace   string    `json:"workspace,omitempty"`
-	CreatedBy   string    `json:"created_by,omitempty"`
-	UpdatedBy   string    `json:"updated_by,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
-	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+	DuplicateTo string        `json:"duplicate_to,omitempty"`
+	Project     string        `json:"project,omitempty"`
+	Workspace   string        `json:"workspace,omitempty"`
+	CreatedBy   string        `json:"created_by,omitempty"`
+	UpdatedBy   string        `json:"updated_by,omitempty"`
+	CreatedAt   time.Time     `json:"created_at,omitempty"`
+	UpdatedAt   time.Time     `json:"updated_at,omitempty"`
 }
 
 type CreateIntakeIssueRequest struct {
@@ -371,15 +371,20 @@ type UpdateAttachmentRequest struct {
 	StorageMetadata  map[string]interface{} `json:"storage_metadata,omitempty"`
 }
 
-// PatchOp represents a single RFC 6902-style JSON Patch operation
+// PatchOp represents a single TaskForge text patch operation.
 type PatchOp struct {
-	Op     string `json:"op"`               // replace, diff, insert, delete
-	Field  string `json:"field"`             // e.g. "description"
-	Old    string `json:"old,omitempty"`     // current value for replace op (conflict detection)
-	Value  string `json:"value,omitempty"`   // for replace, insert
-	Diff   string `json:"diff,omitempty"`    // for diff op
-	After  string `json:"after,omitempty"`   // for insert op
-	Before string `json:"before,omitempty"`  // for delete op
+	Op      string `json:"op"`                // replace, diff, insert, delete
+	Field   string `json:"field"`             // e.g. "description"
+	Old     string `json:"old,omitempty"`     // required for replace/delete precondition checks
+	New     string `json:"new,omitempty"`     // required for replace
+	Content string `json:"content,omitempty"` // required for insert
+	Unified string `json:"unified,omitempty"` // required for diff
+	After   string `json:"after,omitempty"`   // required for insert
+
+	// Legacy input compatibility fields. CLI normalizes these before sending.
+	Value  string `json:"value,omitempty"`  // legacy replace/insert payload
+	Diff   string `json:"diff,omitempty"`   // legacy diff payload
+	Before string `json:"before,omitempty"` // legacy delete anchor payload
 }
 
 // PatchRequest represents a patch request body containing a list of operations
@@ -389,18 +394,18 @@ type PatchRequest struct {
 
 // VersionHistory represents a version history entry for an issue or comment
 type VersionHistory struct {
-	ID          string          `json:"id"`
-	VersionNum  int             `json:"version"`
-	EntityType  string          `json:"entity_type"`
-	EntityID    string          `json:"entity_id"`
-	Field       string          `json:"field"`
-	Content     string          `json:"content"`
-	Diff        string          `json:"diff"`
-	PatchOps    json.RawMessage `json:"patch_ops"`
-	CreatedAt    string          `json:"created_at"`
-	ActorID     string          `json:"actor_id"`
-	ActorType   string          `json:"actor_type"`
-	CreatedBy    FlexibleUser    `json:"created_by"`
+	ID         string          `json:"id"`
+	VersionNum int             `json:"version"`
+	EntityType string          `json:"entity_type"`
+	EntityID   string          `json:"entity_id"`
+	Field      string          `json:"field"`
+	Content    string          `json:"content"`
+	Diff       string          `json:"diff"`
+	PatchOps   json.RawMessage `json:"patch_ops"`
+	CreatedAt  string          `json:"created_at"`
+	ActorID    string          `json:"actor_id"`
+	ActorType  string          `json:"actor_type"`
+	CreatedBy  FlexibleUser    `json:"created_by"`
 }
 
 // RestoreRequest represents a request to restore a deleted entity
