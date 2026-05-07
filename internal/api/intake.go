@@ -38,8 +38,8 @@ func (c *Client) GetIntakeIssue(projectID, intakeID string) (*taskforge.IntakeIs
 	}
 
 	for _, item := range intakeIssues {
-		if item.ID == intakeID && item.Issue != "" {
-			return c.getIntakeIssue(projectID, item.Issue)
+		if item.ID == intakeID && item.Issue.ID != "" {
+			return c.getIntakeIssue(projectID, item.Issue.ID)
 		}
 	}
 

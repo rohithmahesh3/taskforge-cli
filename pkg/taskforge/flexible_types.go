@@ -8,12 +8,12 @@ import (
 
 // FlexibleState can unmarshal from either a string (UUID) or an object
 type FlexibleState struct {
-	ID          string
-	Name        string
-	Color       string
-	Group       string
-	Description string
-	IsUUID      bool
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Color       string `json:"color"`
+	Group       string `json:"group"`
+	Description string `json:"description"`
+	IsUUID      bool   `json:"-"`
 }
 
 func (fs *FlexibleState) UnmarshalJSON(data []byte) error {
@@ -55,15 +55,15 @@ func (fs *FlexibleState) MarshalJSON() ([]byte, error) {
 
 // FlexibleUser can unmarshal from either a string (UUID) or an object
 type FlexibleUser struct {
-	ID          string
-	Email       string
-	DisplayName string
-	FirstName   string
-	LastName    string
-	Avatar      string
-	AvatarURL   string
-	Role        int
-	IsUUID      bool
+	ID          string `json:"id"`
+	Email       string `json:"email"`
+	DisplayName string `json:"display_name"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	Avatar      string `json:"avatar"`
+	AvatarURL   string `json:"avatar_url"`
+	Role        int    `json:"role"`
+	IsUUID      bool   `json:"-"`
 }
 
 func (fu *FlexibleUser) UnmarshalJSON(data []byte) error {
@@ -126,11 +126,11 @@ func (fu *FlexibleUser) ToUser() User {
 
 // FlexibleLabel can unmarshal from either a string (UUID) or an object
 type FlexibleLabel struct {
-	ID          string
-	Name        string
-	Color       string
-	Description string
-	IsUUID      bool
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	IsUUID      bool   `json:"-"`
 }
 
 func (fl *FlexibleLabel) UnmarshalJSON(data []byte) error {

@@ -27,10 +27,16 @@ var listCmd = &cobra.Command{
 	RunE:    runList,
 }
 
+var createNameFlag string
+var createIdentifierFlag string
+var createDescriptionFlag string
+var createSetDefaultFlag bool
+
 var createCmd = &cobra.Command{
-	Use:   "create",
+	Use:   "create [name]",
 	Short: "Create a new project",
 	Long:  `Create a new project in the current workspace.`,
+	Args:  cobra.MaximumNArgs(1),
 	RunE:  runCreate,
 }
 
@@ -65,6 +71,10 @@ func init() {
 	ProjectCmd.AddCommand(deleteCmd)
 	ProjectCmd.AddCommand(membersCmd)
 
+	createCmd.Flags().StringVarP(&createNameFlag, "name", "n", "", "Project name")
+	createCmd.Flags().StringVarP(&createIdentifierFlag, "identifier", "i", "", "Project identifier (e.g., PROJ, WEB)")
+	createCmd.Flags().StringVarP(&createDescriptionFlag, "description", "d", "", "Project description")
+	createCmd.Flags().BoolVar(&createSetDefaultFlag, "set-default", false, "Set as default project after creation")
 }
 
 func runList(cmd *cobra.Command, args []string) error {
@@ -110,10 +120,20 @@ func runList(cmd *cobra.Command, args []string) error {
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
+	// Determine if non-interactive mode should be used
+	// Non-interactive: any of the flags (--name, --identifier, --description) are provided
+	// or a positional arg is provided
+	nonInteractive := cmd.Flags().Changed("name") || cmd.Flags().Changed("identifier") || cmd.Flags().Changed("description")
+
 	var name, identifier string
 
-	if len(args) >= 1 {
+	// Get name from flag, positional arg, or interactive prompt
+	if createNameFlag != "" {
+		name = createNameFlag
+	} else if len(args) >= 1 {
 		name = args[0]
+	} else if nonInteractive {
+		return fmt.Errorf("project name is required (--name flag or positional argument)")
 	} else {
 		prompt := &survey.Input{
 			Message: "Project name:",
@@ -127,24 +147,36 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("project name is required")
 	}
 
-	// Generate default identifier from name
-	defaultIdentifier := strings.ToUpper(strings.ReplaceAll(name, " ", "-"))
-	defaultIdentifier = strings.ReplaceAll(defaultIdentifier, "_", "-")
-	if len(defaultIdentifier) > 10 {
-		defaultIdentifier = defaultIdentifier[:10]
-	}
+	// Get identifier from flag, or interactive prompt
+	if createIdentifierFlag != "" {
+		identifier = createIdentifierFlag
+	} else if cmd.Flags().Changed("identifier") || cmd.Flags().Changed("set-default") {
+		// Non-interactive mode: generate identifier from name
+		identifier = strings.ToUpper(strings.ReplaceAll(name, " ", "-"))
+		identifier = strings.ReplaceAll(identifier, "_", "-")
+		if len(identifier) > 10 {
+			identifier = identifier[:10]
+		}
+	} else {
+		// Interactive mode: prompt for identifier
+		defaultIdentifier := strings.ToUpper(strings.ReplaceAll(name, " ", "-"))
+		defaultIdentifier = strings.ReplaceAll(defaultIdentifier, "_", "-")
+		if len(defaultIdentifier) > 10 {
+			defaultIdentifier = defaultIdentifier[:10]
+		}
 
-	prompt := &survey.Input{
-		Message: "Project identifier:",
-		Default: defaultIdentifier,
-		Help:    "Short unique identifier for the project (e.g., PROJ, WEB)",
-	}
-	if err := survey.AskOne(prompt, &identifier); err != nil {
-		return err
-	}
+		prompt := &survey.Input{
+			Message: "Project identifier:",
+			Default: defaultIdentifier,
+			Help:    "Short unique identifier for the project (e.g., PROJ, WEB)",
+		}
+		if err := survey.AskOne(prompt, &identifier); err != nil {
+			return err
+		}
 
-	if identifier == "" {
-		identifier = defaultIdentifier
+		if identifier == "" {
+			identifier = defaultIdentifier
+		}
 	}
 
 	client, err := api.NewClient()
@@ -152,32 +184,46 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	project, err := client.CreateProject(taskforge.CreateProjectRequest{
+	req := taskforge.CreateProjectRequest{
 		Name:       name,
 		Identifier: identifier,
-	})
+	}
+	if createDescriptionFlag != "" {
+		req.Description = createDescriptionFlag
+	}
+
+	project, err := client.CreateProject(req)
 	if err != nil {
 		return err
 	}
 
 	output.Success(fmt.Sprintf("Created project '%s' (%s)", project.Name, project.Identifier))
 
-	// Ask if user wants to set as default
-	var setDefault bool
-	confirmPrompt := &survey.Confirm{
-		Message: "Set as default project?",
-		Default: true,
-	}
-	if err := survey.AskOne(confirmPrompt, &setDefault); err != nil {
-		return err
-	}
-
-	if setDefault {
+	// Set as default if --set-default flag is provided, or ask interactively
+	if createSetDefaultFlag {
 		config.Cfg.DefaultProject = project.ID
 		if err := config.SaveConfig(); err != nil {
 			return err
 		}
 		output.Info("Set as default project")
+	} else if !cmd.Flags().Changed("set-default") {
+		// Interactive mode: ask if user wants to set as default
+		var setDefault bool
+		confirmPrompt := &survey.Confirm{
+			Message: "Set as default project?",
+			Default: true,
+		}
+		if err := survey.AskOne(confirmPrompt, &setDefault); err != nil {
+			return err
+		}
+
+		if setDefault {
+			config.Cfg.DefaultProject = project.ID
+			if err := config.SaveConfig(); err != nil {
+				return err
+			}
+			output.Info("Set as default project")
+		}
 	}
 
 	return nil

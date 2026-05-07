@@ -35,14 +35,14 @@ func TestGetIntakeIssueFallsBackFromIntakeIDToIssueID(t *testing.T) {
 						Results []taskforge.IntakeIssue `json:"results"`
 					}{
 						Results: []taskforge.IntakeIssue{
-							{ID: "intake-1", Issue: "issue-1"},
+							{ID: "intake-1", Issue: taskforge.FlexibleState{ID: "issue-1"}},
 						},
 					}
 					payload, err := json.Marshal(response)
 					require.NoError(t, err)
 					body = string(payload)
 				case "/api/v1/workspaces/test-workspace/projects/test-project/intake-issues/issue-1/":
-					intake := taskforge.IntakeIssue{ID: "intake-1", Issue: "issue-1"}
+					intake := taskforge.IntakeIssue{ID: "intake-1", Issue: taskforge.FlexibleState{ID: "issue-1"}}
 					payload, err := json.Marshal(intake)
 					require.NoError(t, err)
 					body = string(payload)
@@ -65,5 +65,5 @@ func TestGetIntakeIssueFallsBackFromIntakeIDToIssueID(t *testing.T) {
 	intake, err := client.GetIntakeIssue("test-project", "intake-1")
 	require.NoError(t, err)
 	require.Equal(t, "intake-1", intake.ID)
-	require.Equal(t, "issue-1", intake.Issue)
+	require.Equal(t, "issue-1", intake.Issue.ID)
 }

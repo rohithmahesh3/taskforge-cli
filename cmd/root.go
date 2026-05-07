@@ -49,6 +49,7 @@ Get started:
   taskforge workspace members --search alice # Find assignable workspace users by name/email
   taskforge project list                  # List projects in current workspace
   taskforge issue list                    # List issues in current project`,
+	Version: version,
 	SilenceUsage: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Skip config initialization for certain commands

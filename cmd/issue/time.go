@@ -20,7 +20,7 @@ func ensureTimeTrackingEnabled(client *api.Client, projectID string) error {
 		return err
 	}
 	if !project.IsTimeTrackingEnabled {
-		return fmt.Errorf("time tracking is disabled for project %s", projectID)
+		return fmt.Errorf("time tracking is disabled for project %q (%s). Enable it in the project settings to use time tracking commands", project.Name, projectID)
 	}
 	return nil
 }

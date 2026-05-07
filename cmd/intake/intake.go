@@ -97,7 +97,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		ID     string `table:"ID" json:"id"`
 		Status string `table:"STATUS" json:"status_formatted"`
 		Source string `table:"SOURCE" json:"source,omitempty"`
-		Issue  string `table:"ISSUE" json:"issue,omitempty"`
+		Issue  string `table:"ISSUE" json:"issue,omitempty"` // Display issue ID from FlexibleState
 	}
 
 	var outputs []intakeOutput
@@ -106,7 +106,7 @@ func runList(cmd *cobra.Command, args []string) error {
 			ID:     i.ID,
 			Status: formatIntakeStatus(i.Status),
 			Source: i.Source,
-			Issue:  i.Issue,
+			Issue:  i.Issue.ID,
 		})
 	}
 
@@ -174,8 +174,8 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	req := taskforge.CreateIntakeIssueRequest{}
-	req.Issue.Name = intakeName
-	req.Issue.Priority = intakePriority
+	req.Name = intakeName
+	req.Priority = intakePriority
 
 	intake, err := client.CreateIntakeIssue(projectID, req)
 	if err != nil {

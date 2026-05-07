@@ -35,10 +35,24 @@ func init() {
 	ConfigCmd.AddCommand(setCmd)
 }
 
+func normalizeConfigKey(key string) (string, error) {
+	switch key {
+	case "workspace", "default_workspace":
+		return "workspace", nil
+	case "project", "default_project":
+		return "project", nil
+	case "output", "output_format", "format":
+		return "output", nil
+	case "api_host", "api_host_url", "host":
+		return "api_host", nil
+	default:
+		return "", fmt.Errorf("unknown config key: %q (valid keys: workspace, project, output, api_host)", key)
+	}
+}
+
 func runGet(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		// Show all config
-		fmt.Printf("version: %s\n", config.Cfg.Version)
 		fmt.Printf("default_workspace: %s\n", config.Cfg.DefaultWorkspace)
 		fmt.Printf("default_project: %s\n", config.Cfg.DefaultProject)
 		fmt.Printf("output_format: %s\n", config.Cfg.OutputFormat)
@@ -46,8 +60,12 @@ func runGet(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	key := args[0]
-	switch key {
+	normalized, err := normalizeConfigKey(args[0])
+	if err != nil {
+		return err
+	}
+
+	switch normalized {
 	case "workspace":
 		fmt.Println(config.Cfg.DefaultWorkspace)
 	case "project":
@@ -56,18 +74,20 @@ func runGet(cmd *cobra.Command, args []string) error {
 		fmt.Println(config.Cfg.OutputFormat)
 	case "api_host":
 		fmt.Println(config.Cfg.APIHost)
-	default:
-		return fmt.Errorf("unknown config key: %s", key)
 	}
 
 	return nil
 }
 
 func runSet(cmd *cobra.Command, args []string) error {
-	key := args[0]
+	normalized, err := normalizeConfigKey(args[0])
+	if err != nil {
+		return err
+	}
+
 	value := args[1]
 
-	switch key {
+	switch normalized {
 	case "workspace":
 		config.Cfg.DefaultWorkspace = value
 	case "project":
@@ -80,14 +100,12 @@ func runSet(cmd *cobra.Command, args []string) error {
 		config.Cfg.OutputFormat = value
 	case "api_host":
 		config.Cfg.APIHost = value
-	default:
-		return fmt.Errorf("unknown config key: %s", key)
 	}
 
 	if err := config.SaveConfig(); err != nil {
 		return err
 	}
 
-	output.Success(fmt.Sprintf("Set %s to %s", key, value))
+	output.Success(fmt.Sprintf("Set %s to %s", args[0], value))
 	return nil
 }

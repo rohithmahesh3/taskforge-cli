@@ -318,7 +318,7 @@ type IntakeIssue struct {
 	SnoozedTill string    `json:"snoozed_till,omitempty"`
 	Source      string    `json:"source,omitempty"`
 	Inbox       string    `json:"inbox,omitempty"`
-	Issue       string    `json:"issue,omitempty"`
+	Issue       FlexibleState `json:"issue,omitempty"`
 	DuplicateTo string    `json:"duplicate_to,omitempty"`
 	Project     string    `json:"project,omitempty"`
 	Workspace   string    `json:"workspace,omitempty"`
@@ -329,10 +329,9 @@ type IntakeIssue struct {
 }
 
 type CreateIntakeIssueRequest struct {
-	Issue struct {
-		Name     string `json:"name"`
-		Priority string `json:"priority,omitempty"`
-	} `json:"issue"`
+	Name     string `json:"name"`
+	Priority string `json:"priority,omitempty"`
+	Source   string `json:"source,omitempty"`
 }
 
 type Activity struct {
