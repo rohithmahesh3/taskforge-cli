@@ -78,7 +78,7 @@ func runCommentVersionList(cmd *cobra.Command, args []string) error {
 	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
 
 	type versionOutput struct {
-		Version   int    `json:"version_num"`
+		Version   int    `json:"version"`
 		Field     string `json:"field"`
 		Created   string `json:"created_at"`
 		CreatedBy string `json:"created_by"`
@@ -86,12 +86,7 @@ func runCommentVersionList(cmd *cobra.Command, args []string) error {
 
 	var outputs []versionOutput
 	for _, v := range versions {
-		createdBy := v.CreatedByID
-		if v.CreatedBy.DisplayName != "" {
-			createdBy = v.CreatedBy.DisplayName
-		} else if v.CreatedBy.Email != "" {
-			createdBy = v.CreatedBy.Email
-		}
+		createdBy := v.ActorID
 
 		outputs = append(outputs, versionOutput{
 			Version:   v.VersionNum,

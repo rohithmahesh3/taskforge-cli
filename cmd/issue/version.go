@@ -83,26 +83,19 @@ func runVersionList(cmd *cobra.Command, args []string) error {
 	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
 
 	type versionOutput struct {
-		Version   int    `json:"version_num"`
+		Version   int    `json:"version"`
 		Field     string `json:"field"`
-		Created   string `json:"created_at"`
-		CreatedBy string `json:"created_by"`
+		CreatedAt string `json:"created_at"`
+		ActorID   string `json:"actor_id"`
 	}
 
 	var outputs []versionOutput
 	for _, v := range versions {
-		createdBy := v.CreatedByID
-		if v.CreatedBy.DisplayName != "" {
-			createdBy = v.CreatedBy.DisplayName
-		} else if v.CreatedBy.Email != "" {
-			createdBy = v.CreatedBy.Email
-		}
-
 		outputs = append(outputs, versionOutput{
 			Version:   v.VersionNum,
 			Field:     v.Field,
-			Created:   v.CreatedAt,
-			CreatedBy: createdBy,
+			CreatedAt: v.CreatedAt,
+			ActorID:   v.ActorID,
 		})
 	}
 

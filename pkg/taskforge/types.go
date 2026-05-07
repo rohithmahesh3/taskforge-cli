@@ -390,14 +390,16 @@ type PatchRequest struct {
 // VersionHistory represents a version history entry for an issue or comment
 type VersionHistory struct {
 	ID          string          `json:"id"`
-	VersionNum  int             `json:"version_num"`
+	VersionNum  int             `json:"version"`
 	EntityType  string          `json:"entity_type"`
 	EntityID    string          `json:"entity_id"`
 	Field       string          `json:"field"`
 	Content     string          `json:"content"`
+	Diff        string          `json:"diff"`
 	PatchOps    json.RawMessage `json:"patch_ops"`
 	CreatedAt    string          `json:"created_at"`
-	CreatedByID  string          `json:"created_by_id"`
+	ActorID     string          `json:"actor_id"`
+	ActorType   string          `json:"actor_type"`
 	CreatedBy    FlexibleUser    `json:"created_by"`
 }
 
