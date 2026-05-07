@@ -3,7 +3,6 @@ package issue
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
@@ -12,8 +11,9 @@ import (
 )
 
 var (
-	commentText   string
-	commentAccess string
+	commentText      string
+	commentAccess    string
+	commentDeleteYes bool
 )
 
 func init() {
@@ -50,6 +50,7 @@ func init() {
 
 	commentAddCmd.Flags().StringVarP(&commentText, "text", "t", "", "Comment text")
 	commentAddCmd.Flags().StringVar(&commentAccess, "access", "INTERNAL", "Comment access (INTERNAL or EXTERNAL)")
+	commentDeleteCmd.Flags().BoolVarP(&commentDeleteYes, "yes", "y", false, "Skip confirmation")
 
 	commentCmd.AddCommand(commentListCmd)
 	commentCmd.AddCommand(commentAddCmd)
@@ -131,17 +132,9 @@ func runCommentAdd(cmd *cobra.Command, args []string) error {
 
 	issueID := args[0]
 
-	// Interactive prompts if flags not provided
+	// Interactive prompt if flag not provided
 	if commentText == "" {
-		prompt := &survey.Editor{
-			Message:       "Comment:",
-			FileName:      "*.md",
-			HideDefault:   true,
-			AppendDefault: true,
-		}
-		if err := survey.AskOne(prompt, &commentText); err != nil {
-			return err
-		}
+		return fmt.Errorf("comment text is required (use --text / -t flag)")
 	}
 
 	if commentText == "" {
@@ -182,18 +175,8 @@ func runCommentDelete(cmd *cobra.Command, args []string) error {
 	commentID := args[1]
 
 	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete comment %s?", commentID),
-		Default: false,
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
+	if !commentDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
 
 	client, err := api.NewClient()

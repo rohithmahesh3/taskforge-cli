@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
@@ -28,6 +27,7 @@ func ensureTimeTrackingEnabled(client *api.Client, projectID string) error {
 var (
 	worklogDescription string
 	worklogDuration    string
+	worklogDeleteYes   bool
 )
 
 func init() {
@@ -89,6 +89,7 @@ Examples:
 	timeLogCmd.Flags().StringVarP(&worklogDescription, "description", "d", "", "Description of work done")
 	timeEditCmd.Flags().StringVarP(&worklogDescription, "description", "d", "", "New description")
 	timeEditCmd.Flags().StringVarP(&worklogDuration, "duration", "t", "", "New duration (e.g., 2h30m, 90)")
+	timeDeleteCmd.Flags().BoolVarP(&worklogDeleteYes, "yes", "y", false, "Skip confirmation")
 
 	timeCmd.AddCommand(timeListCmd)
 	timeCmd.AddCommand(timeLogCmd)
@@ -177,15 +178,9 @@ func runTimeLog(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid duration format: %w", err)
 	}
 
-	// Interactive prompt for description if not provided
+	// Prompt for description if flag not provided
 	if worklogDescription == "" {
-		prompt := &survey.Input{
-			Message: "Description of work done:",
-			Help:    "Brief description of what you worked on",
-		}
-		if err := survey.AskOne(prompt, &worklogDescription); err != nil {
-			return err
-		}
+		worklogDescription = fmt.Sprintf("Worked for %s", formatDuration(duration))
 	}
 
 	client, err := api.NewClient()
@@ -264,53 +259,21 @@ func runTimeEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Get current worklog
-	worklog, err := client.GetWorklog(projectID, issueID, worklogID)
-	if err != nil {
-		return err
-	}
-
 	req := taskforge.UpdateWorklogRequest{}
 
-	// Interactive mode if no flags provided
+	// Use provided flags
 	if worklogDescription == "" && worklogDuration == "" {
-		output.Info(fmt.Sprintf("Editing time log from %s", worklog.CreatedAt.Format("2006-01-02 15:04")))
-
-		descPrompt := &survey.Input{
-			Message: "Description:",
-			Default: worklog.Description,
+		return fmt.Errorf("no edit flags provided. Available: --description, --duration")
+	}
+	if worklogDescription != "" {
+		req.Description = worklogDescription
+	}
+	if worklogDuration != "" {
+		duration, err := parseDuration(worklogDuration)
+		if err != nil {
+			return fmt.Errorf("invalid duration format: %w", err)
 		}
-		if err := survey.AskOne(descPrompt, &req.Description); err != nil {
-			return err
-		}
-
-		durationPrompt := &survey.Input{
-			Message: "Duration (e.g., 2h30m, 90):",
-			Default: fmt.Sprintf("%d", worklog.Duration),
-		}
-		var durationStr string
-		if err := survey.AskOne(durationPrompt, &durationStr); err != nil {
-			return err
-		}
-		if durationStr != "" {
-			duration, err := parseDuration(durationStr)
-			if err != nil {
-				return fmt.Errorf("invalid duration format: %w", err)
-			}
-			req.Duration = duration
-		}
-	} else {
-		// Use provided flags
-		if worklogDescription != "" {
-			req.Description = worklogDescription
-		}
-		if worklogDuration != "" {
-			duration, err := parseDuration(worklogDuration)
-			if err != nil {
-				return fmt.Errorf("invalid duration format: %w", err)
-			}
-			req.Duration = duration
-		}
+		req.Duration = duration
 	}
 
 	updatedWorklog, err := client.UpdateWorklog(projectID, issueID, worklogID, req)
@@ -332,18 +295,8 @@ func runTimeDelete(cmd *cobra.Command, args []string) error {
 	worklogID := args[1]
 
 	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete time log %s?", worklogID),
-		Default: false,
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
+	if !worklogDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
 
 	client, err := api.NewClient()

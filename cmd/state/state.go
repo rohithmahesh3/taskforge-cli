@@ -3,7 +3,6 @@ package state
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
@@ -16,6 +15,7 @@ var (
 	stateDescription string
 	stateColor       string
 	stateGroup       string
+	stateDeleteYes   bool
 )
 
 var StateCmd = &cobra.Command{
@@ -78,14 +78,18 @@ func init() {
 	// Create flags
 	createCmd.Flags().StringVarP(&stateName, "name", "n", "", "State name")
 	createCmd.Flags().StringVarP(&stateDescription, "description", "d", "", "State description")
-	createCmd.Flags().StringVarP(&stateColor, "color", "c", "", "State color (hex code, e.g., #F59E0B)")
-	createCmd.Flags().StringVarP(&stateGroup, "group", "g", "", "State group (backlog, unstarted, started, completed, cancelled)")
+	createCmd.Flags().StringVarP(&stateColor, "color", "c", "#F59E0B", "State color (hex code, e.g., #F59E0B)")
+	createCmd.Flags().StringVarP(&stateGroup, "group", "g", "backlog", "State group (backlog, unstarted, started, completed, cancelled)")
 
 	// Edit flags
 	editCmd.Flags().StringVarP(&stateName, "name", "n", "", "New state name")
 	editCmd.Flags().StringVarP(&stateDescription, "description", "d", "", "New state description")
 	editCmd.Flags().StringVarP(&stateColor, "color", "c", "", "New state color")
 	editCmd.Flags().StringVarP(&stateGroup, "group", "g", "", "New state group")
+
+	deleteCmd.Flags().BoolVarP(&stateDeleteYes, "yes", "y", false, "Skip confirmation")
+
+	_ = createCmd.MarkFlagRequired("name")
 }
 
 func runList(cmd *cobra.Command, args []string) error {
@@ -167,51 +171,6 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no project specified. Use --project flag or set default project")
 	}
 
-	// Interactive prompts if flags not provided
-	if stateName == "" {
-		prompt := &survey.Input{
-			Message: "State name:",
-			Help:    "e.g., In Review, Testing, Deployed",
-		}
-		if err := survey.AskOne(prompt, &stateName); err != nil {
-			return err
-		}
-	}
-
-	if stateName == "" {
-		return fmt.Errorf("state name is required")
-	}
-
-	if stateColor == "" {
-		prompt := &survey.Input{
-			Message: "State color (hex code):",
-			Default: "#F59E0B",
-			Help:    "Hex color code (e.g., #F59E0B for orange)",
-		}
-		if err := survey.AskOne(prompt, &stateColor); err != nil {
-			return err
-		}
-	}
-
-	if stateGroup == "" {
-		groupOptions := []string{"backlog", "unstarted", "started", "completed", "cancelled"}
-		prompt := &survey.Select{
-			Message: "State group:",
-			Options: groupOptions,
-			Help:    "The workflow group this state belongs to",
-		}
-		if err := survey.AskOne(prompt, &stateGroup); err != nil {
-			return err
-		}
-	}
-
-	if stateDescription == "" {
-		prompt := &survey.Input{
-			Message: "Description (optional):",
-		}
-		_ = survey.AskOne(prompt, &stateDescription)
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err
@@ -241,70 +200,30 @@ func runEdit(cmd *cobra.Command, args []string) error {
 
 	stateID := args[0]
 
-	client, err := api.NewClient()
-	if err != nil {
-		return err
-	}
-
-	// Get current state
-	state, err := client.GetState(projectID, stateID)
-	if err != nil {
-		return err
-	}
-
 	req := taskforge.UpdateStateRequest{}
 
 	// Interactive mode if no flags provided
 	if stateName == "" && stateDescription == "" && stateColor == "" && stateGroup == "" {
-		output.Info(fmt.Sprintf("Editing state: %s", state.Name))
+		return fmt.Errorf("no edit flags provided. Available: --name, --description, --color, --group")
+	}
 
-		prompt := &survey.Input{
-			Message: "Name:",
-			Default: state.Name,
-		}
-		if err := survey.AskOne(prompt, &req.Name); err != nil {
-			return err
-		}
+	// Use provided flags
+	if stateName != "" {
+		req.Name = stateName
+	}
+	if stateDescription != "" {
+		req.Description = stateDescription
+	}
+	if stateColor != "" {
+		req.Color = stateColor
+	}
+	if stateGroup != "" {
+		req.Group = stateGroup
+	}
 
-		descPrompt := &survey.Input{
-			Message: "Description:",
-			Default: state.Description,
-		}
-		if err := survey.AskOne(descPrompt, &req.Description); err != nil {
-			return err
-		}
-
-		colorPrompt := &survey.Input{
-			Message: "Color:",
-			Default: state.Color,
-		}
-		if err := survey.AskOne(colorPrompt, &req.Color); err != nil {
-			return err
-		}
-
-		groupOptions := []string{"backlog", "unstarted", "started", "completed", "cancelled"}
-		groupPrompt := &survey.Select{
-			Message: "Group:",
-			Options: groupOptions,
-			Default: state.Group,
-		}
-		if err := survey.AskOne(groupPrompt, &req.Group); err != nil {
-			return err
-		}
-	} else {
-		// Use provided flags
-		if stateName != "" {
-			req.Name = stateName
-		}
-		if stateDescription != "" {
-			req.Description = stateDescription
-		}
-		if stateColor != "" {
-			req.Color = stateColor
-		}
-		if stateGroup != "" {
-			req.Group = stateGroup
-		}
+	client, err := api.NewClient()
+	if err != nil {
+		return err
 	}
 
 	updatedState, err := client.UpdateState(projectID, stateID, req)
@@ -325,18 +244,8 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	stateID := args[0]
 
 	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete state %s?", stateID),
-		Default: false,
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
+	if !stateDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
 
 	client, err := api.NewClient()

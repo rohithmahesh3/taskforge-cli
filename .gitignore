@@ -48,3 +48,5 @@ config.yaml
 
 # TaskForge CLI
 .taskforge/
+/tf-cli
+bin/

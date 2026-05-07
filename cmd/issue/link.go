@@ -3,7 +3,6 @@ package issue
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
@@ -12,7 +11,8 @@ import (
 )
 
 var (
-	linkTitle string
+	linkTitle     string
+	linkDeleteYes bool
 )
 
 func init() {
@@ -47,6 +47,7 @@ func init() {
 	}
 
 	linkAddCmd.Flags().StringVarP(&linkTitle, "title", "t", "", "Link title")
+	linkDeleteCmd.Flags().BoolVarP(&linkDeleteYes, "yes", "y", false, "Skip confirmation")
 
 	linkCmd.AddCommand(linkListCmd)
 	linkCmd.AddCommand(linkAddCmd)
@@ -118,25 +119,7 @@ func runLinkAdd(cmd *cobra.Command, args []string) error {
 
 	// Interactive prompts if flags not provided
 	if url == "" {
-		prompt := &survey.Input{
-			Message: "Link URL:",
-			Help:    "The external URL to attach to the issue",
-		}
-		if err := survey.AskOne(prompt, &url); err != nil {
-			return err
-		}
-	}
-
-	if url == "" {
-		return fmt.Errorf("URL is required")
-	}
-
-	if linkTitle == "" {
-		prompt := &survey.Input{
-			Message: "Link title (optional):",
-			Help:    "A descriptive title for the link",
-		}
-		_ = survey.AskOne(prompt, &linkTitle)
+		return fmt.Errorf("URL is required (provide as positional argument)")
 	}
 
 	client, err := api.NewClient()
@@ -173,18 +156,8 @@ func runLinkDelete(cmd *cobra.Command, args []string) error {
 	linkID := args[1]
 
 	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete link %s?", linkID),
-		Default: false,
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
+	if !linkDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
 
 	client, err := api.NewClient()

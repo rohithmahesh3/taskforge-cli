@@ -3,7 +3,6 @@ package intake
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
@@ -12,8 +11,9 @@ import (
 )
 
 var (
-	intakeName     string
-	intakePriority string
+	intakeName      string
+	intakePriority  string
+	intakeDeleteYes bool
 )
 
 var IntakeCmd = &cobra.Command{
@@ -68,6 +68,9 @@ func init() {
 	// Create flags
 	createCmd.Flags().StringVarP(&intakeName, "name", "n", "", "Issue name/title")
 	createCmd.Flags().StringVarP(&intakePriority, "priority", "p", "medium", "Issue priority (low, medium, high, urgent)")
+	deleteCmd.Flags().BoolVarP(&intakeDeleteYes, "yes", "y", false, "Skip confirmation")
+
+	_ = createCmd.MarkFlagRequired("name")
 }
 
 func runList(cmd *cobra.Command, args []string) error {
@@ -145,33 +148,6 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no project specified. Use --project flag or set default project")
 	}
 
-	// Interactive prompts if flags not provided
-	if intakeName == "" {
-		prompt := &survey.Input{
-			Message: "Issue name/title:",
-			Help:    "Brief description of the request",
-		}
-		if err := survey.AskOne(prompt, &intakeName); err != nil {
-			return err
-		}
-	}
-
-	if intakeName == "" {
-		return fmt.Errorf("issue name is required")
-	}
-
-	if intakePriority == "" {
-		priorityOptions := []string{"low", "medium", "high", "urgent"}
-		prompt := &survey.Select{
-			Message: "Priority:",
-			Options: priorityOptions,
-			Default: "medium",
-		}
-		if err := survey.AskOne(prompt, &intakePriority); err != nil {
-			return err
-		}
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err
@@ -199,20 +175,10 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	intakeID := args[0]
 
 	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete intake issue %s?", intakeID),
-		Default: false,
+	// Confirm deletion
+	if !intakeDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err

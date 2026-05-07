@@ -3,7 +3,6 @@ package cycle
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
@@ -17,6 +16,7 @@ var (
 	cycleStartDate   string
 	cycleEndDate     string
 	showArchived     bool
+	cycleDeleteYes   bool
 )
 
 var CycleCmd = &cobra.Command{
@@ -128,6 +128,9 @@ func init() {
 	editCmd.Flags().StringVarP(&cycleDescription, "description", "d", "", "New cycle description")
 	editCmd.Flags().StringVarP(&cycleStartDate, "start-date", "s", "", "New start date (YYYY-MM-DD)")
 	editCmd.Flags().StringVarP(&cycleEndDate, "end-date", "e", "", "New end date (YYYY-MM-DD)")
+	deleteCmd.Flags().BoolVarP(&cycleDeleteYes, "yes", "y", false, "Skip confirmation")
+
+	_ = createCmd.MarkFlagRequired("name")
 }
 
 func runList(cmd *cobra.Command, args []string) error {
@@ -205,44 +208,6 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no project specified. Use --project flag or set default project")
 	}
 
-	// Interactive prompts if flags not provided
-	if cycleName == "" {
-		prompt := &survey.Input{
-			Message: "Cycle name:",
-			Help:    "e.g., Sprint 1, Q1 Planning",
-		}
-		if err := survey.AskOne(prompt, &cycleName); err != nil {
-			return err
-		}
-	}
-
-	if cycleName == "" {
-		return fmt.Errorf("cycle name is required")
-	}
-
-	if cycleDescription == "" {
-		prompt := &survey.Input{
-			Message: "Description (optional):",
-		}
-		_ = survey.AskOne(prompt, &cycleDescription)
-	}
-
-	if cycleStartDate == "" {
-		prompt := &survey.Input{
-			Message: "Start date (YYYY-MM-DD):",
-			Help:    "When does this cycle start?",
-		}
-		_ = survey.AskOne(prompt, &cycleStartDate)
-	}
-
-	if cycleEndDate == "" {
-		prompt := &survey.Input{
-			Message: "End date (YYYY-MM-DD):",
-			Help:    "When does this cycle end?",
-		}
-		_ = survey.AskOne(prompt, &cycleEndDate)
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err
@@ -272,68 +237,30 @@ func runEdit(cmd *cobra.Command, args []string) error {
 
 	cycleID := args[0]
 
-	client, err := api.NewClient()
-	if err != nil {
-		return err
-	}
-
-	// Get current cycle
-	cycle, err := client.GetCycle(projectID, cycleID)
-	if err != nil {
-		return err
-	}
-
 	req := taskforge.UpdateCycleRequest{}
 
 	// Interactive mode if no flags provided
 	if cycleName == "" && cycleDescription == "" && cycleStartDate == "" && cycleEndDate == "" {
-		output.Info(fmt.Sprintf("Editing cycle: %s", cycle.Name))
+		return fmt.Errorf("no edit flags provided. Available: --name, --description, --start-date, --end-date")
+	}
 
-		prompt := &survey.Input{
-			Message: "Name:",
-			Default: cycle.Name,
-		}
-		if err := survey.AskOne(prompt, &req.Name); err != nil {
-			return err
-		}
+	// Use provided flags
+	if cycleName != "" {
+		req.Name = cycleName
+	}
+	if cycleDescription != "" {
+		req.Description = cycleDescription
+	}
+	if cycleStartDate != "" {
+		req.StartDate = cycleStartDate
+	}
+	if cycleEndDate != "" {
+		req.EndDate = cycleEndDate
+	}
 
-		descPrompt := &survey.Input{
-			Message: "Description:",
-			Default: cycle.Description,
-		}
-		if err := survey.AskOne(descPrompt, &req.Description); err != nil {
-			return err
-		}
-
-		startPrompt := &survey.Input{
-			Message: "Start date (YYYY-MM-DD):",
-			Default: cycle.StartDate,
-		}
-		if err := survey.AskOne(startPrompt, &req.StartDate); err != nil {
-			return err
-		}
-
-		endPrompt := &survey.Input{
-			Message: "End date (YYYY-MM-DD):",
-			Default: cycle.EndDate,
-		}
-		if err := survey.AskOne(endPrompt, &req.EndDate); err != nil {
-			return err
-		}
-	} else {
-		// Use provided flags
-		if cycleName != "" {
-			req.Name = cycleName
-		}
-		if cycleDescription != "" {
-			req.Description = cycleDescription
-		}
-		if cycleStartDate != "" {
-			req.StartDate = cycleStartDate
-		}
-		if cycleEndDate != "" {
-			req.EndDate = cycleEndDate
-		}
+	client, err := api.NewClient()
+	if err != nil {
+		return err
 	}
 
 	updatedCycle, err := client.UpdateCycle(projectID, cycleID, req)
@@ -354,18 +281,8 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	cycleID := args[0]
 
 	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete cycle %s?", cycleID),
-		Default: false,
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
+	if !cycleDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
 
 	client, err := api.NewClient()

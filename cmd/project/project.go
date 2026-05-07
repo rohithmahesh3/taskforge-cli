@@ -2,6 +2,7 @@ package project
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -125,11 +126,11 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	// Non-interactive: any create flag provided, positional arg provided, or stdin is not a TTY.
 	nonInteractive :=
 		cmd.Flags().Changed("name") ||
-		cmd.Flags().Changed("identifier") ||
-		cmd.Flags().Changed("description") ||
-		cmd.Flags().Changed("set-default") ||
-		len(args) > 0 ||
-		!term.IsTerminal(0)
+			cmd.Flags().Changed("identifier") ||
+			cmd.Flags().Changed("description") ||
+			cmd.Flags().Changed("set-default") ||
+			len(args) > 0 ||
+			!term.IsTerminal(0)
 
 	var name, identifier string
 
@@ -156,19 +157,19 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	// Get identifier from flag, or interactive prompt
 	if createIdentifierFlag != "" {
 		identifier = createIdentifierFlag
-	} else if cmd.Flags().Changed("identifier") || cmd.Flags().Changed("set-default") {
+	} else if nonInteractive {
 		// Non-interactive mode: generate identifier from name
-		identifier = strings.ToUpper(strings.ReplaceAll(name, " ", "-"))
-		identifier = strings.ReplaceAll(identifier, "_", "-")
-		if len(identifier) > 10 {
-			identifier = identifier[:10]
+		identifier = regexp.MustCompile(`[^A-Z0-9]+`).ReplaceAllString(strings.ToUpper(name), "")
+
+		if len(identifier) > 5 {
+			identifier = identifier[:5]
 		}
 	} else {
 		// Interactive mode: prompt for identifier
-		defaultIdentifier := strings.ToUpper(strings.ReplaceAll(name, " ", "-"))
-		defaultIdentifier = strings.ReplaceAll(defaultIdentifier, "_", "-")
-		if len(defaultIdentifier) > 10 {
-			defaultIdentifier = defaultIdentifier[:10]
+		defaultIdentifier := regexp.MustCompile(`[^A-Z0-9]+`).ReplaceAllString(strings.ToUpper(name), "")
+
+		if len(defaultIdentifier) > 5 {
+			defaultIdentifier = defaultIdentifier[:5]
 		}
 
 		prompt := &survey.Input{

@@ -2,14 +2,11 @@ package issue
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/spf13/cobra"
-	"golang.org/x/term"
 )
 
 var (
@@ -63,20 +60,7 @@ func runCommentRestore(cmd *cobra.Command, args []string) error {
 
 	confirm := commentRestoreYes
 	if !confirm {
-		if !term.IsTerminal(int(os.Stdin.Fd())) {
-			return fmt.Errorf("interactive confirmation required in non-tty mode; rerun with --yes")
-		}
-		prompt := &survey.Confirm{
-			Message: fmt.Sprintf("Are you sure you want to restore comment %s?", commentID),
-			Default: false,
-		}
-		if err := survey.AskOne(prompt, &confirm); err != nil {
-			return err
-		}
-		if !confirm {
-			output.Info("Restore cancelled")
-			return nil
-		}
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm restoration")
 	}
 
 	comment, err := client.RestoreComment(projectID, issueID, commentID, commentRestoreVersionNum)

@@ -2,15 +2,12 @@ package issue
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
-	"golang.org/x/term"
 )
 
 var (
@@ -214,30 +211,8 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no project specified. Use --project flag or set default project")
 	}
 
-	// Interactive prompts if flags not provided
 	if issueTitle == "" {
-		prompt := &survey.Input{
-			Message: "Issue title:",
-		}
-		if err := survey.AskOne(prompt, &issueTitle); err != nil {
-			return err
-		}
-	}
-
-	if issueTitle == "" {
-		return fmt.Errorf("issue title is required")
-	}
-
-	if issueDescription == "" {
-		prompt := &survey.Editor{
-			Message:       "Issue description:",
-			FileName:      "*.md",
-			HideDefault:   true,
-			AppendDefault: true,
-		}
-		if err := survey.AskOne(prompt, &issueDescription); err != nil {
-			return err
-		}
+		return fmt.Errorf("issue title is required (use --title / -t flag)")
 	}
 
 	client, err := api.NewClient()
@@ -294,48 +269,28 @@ func runEdit(cmd *cobra.Command, args []string) error {
 
 	hasFlags := issueTitle != "" || issueDescription != "" || issuePriority != "" || issueState != "" || len(issueAssignees) > 0 || len(issueLabels) > 0
 
-	// Interactive mode if no flags provided
 	if !hasFlags {
-		// Show current values and prompt for changes
-		output.Info(fmt.Sprintf("Editing issue %d: %s", issue.SequenceID, issue.Name))
+		return fmt.Errorf("no edit flags provided. Available: --title, --description, --priority, --state, --assignee, --label")
+	}
 
-		prompt := &survey.Input{
-			Message: "Title:",
-			Default: issue.Name,
-		}
-		if err := survey.AskOne(prompt, &req.Name); err != nil {
-			return err
-		}
-
-		priorityOptions := []string{"none", "low", "medium", "high", "urgent"}
-		priorityPrompt := &survey.Select{
-			Message: "Priority:",
-			Options: priorityOptions,
-			Default: issue.Priority,
-		}
-		if err := survey.AskOne(priorityPrompt, &req.Priority); err != nil {
-			return err
-		}
-	} else {
-		// Use provided flags
-		if issueTitle != "" {
-			req.Name = issueTitle
-		}
-		if issueDescription != "" {
-			req.Description = issueDescription
-		}
-		if issuePriority != "" {
-			req.Priority = issuePriority
-		}
-		if issueState != "" {
-			req.State = issueState
-		}
-		if len(issueAssignees) > 0 {
-			req.Assignees = issueAssignees
-		}
-		if len(issueLabels) > 0 {
-			req.Labels = issueLabels
-		}
+	// Use provided flags
+	if issueTitle != "" {
+		req.Name = issueTitle
+	}
+	if issueDescription != "" {
+		req.Description = issueDescription
+	}
+	if issuePriority != "" {
+		req.Priority = issuePriority
+	}
+	if issueState != "" {
+		req.State = issueState
+	}
+	if len(issueAssignees) > 0 {
+		req.Assignees = issueAssignees
+	}
+	if len(issueLabels) > 0 {
+		req.Labels = issueLabels
 	}
 
 	updatedIssue, err := client.UpdateIssue(projectID, issue.ID, req)
@@ -365,22 +320,8 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	confirm := deleteYes
-	if !confirm {
-		if !term.IsTerminal(int(os.Stdin.Fd())) {
-			return fmt.Errorf("interactive confirmation required in non-tty mode; rerun with --yes")
-		}
-		prompt := &survey.Confirm{
-			Message: fmt.Sprintf("Are you sure you want to delete issue %s?", issueRef),
-			Default: false,
-		}
-		if err := survey.AskOne(prompt, &confirm); err != nil {
-			return err
-		}
-		if !confirm {
-			output.Info("Deletion cancelled")
-			return nil
-		}
+	if !deleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
 
 	if err := client.DeleteIssue(projectID, issueID); err != nil {

@@ -3,7 +3,6 @@ package issuetype
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
@@ -14,6 +13,7 @@ import (
 var (
 	typeName        string
 	typeDescription string
+	typeDeleteYes   bool
 )
 
 var TypeCmd = &cobra.Command{
@@ -47,6 +47,9 @@ var typeDeleteCmd = &cobra.Command{
 func init() {
 	typeCreateCmd.Flags().StringVarP(&typeName, "name", "n", "", "Issue type name")
 	typeCreateCmd.Flags().StringVarP(&typeDescription, "description", "d", "", "Issue type description")
+	typeDeleteCmd.Flags().BoolVarP(&typeDeleteYes, "yes", "y", false, "Skip confirmation")
+
+	_ = typeCreateCmd.MarkFlagRequired("name")
 
 	TypeCmd.AddCommand(typeListCmd)
 	TypeCmd.AddCommand(typeCreateCmd)
@@ -114,28 +117,6 @@ func runTypeCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no project specified")
 	}
 
-	// Interactive prompts if flags not provided
-	if typeName == "" {
-		prompt := &survey.Input{
-			Message: "Issue type name:",
-			Help:    "e.g., Bug, Feature, Task",
-		}
-		if err := survey.AskOne(prompt, &typeName); err != nil {
-			return err
-		}
-	}
-
-	if typeName == "" {
-		return fmt.Errorf("name is required")
-	}
-
-	if typeDescription == "" {
-		prompt := &survey.Input{
-			Message: "Description (optional):",
-		}
-		_ = survey.AskOne(prompt, &typeDescription)
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err
@@ -173,20 +154,10 @@ func runTypeDelete(cmd *cobra.Command, args []string) error {
 	typeID := args[0]
 
 	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete issue type %s?", typeID),
-		Default: false,
+	// Confirm deletion
+	if !typeDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err

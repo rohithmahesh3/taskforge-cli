@@ -3,7 +3,6 @@ package module
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
@@ -16,6 +15,7 @@ var (
 	moduleDescription string
 	moduleStatus      string
 	showArchived      bool
+	moduleDeleteYes   bool
 )
 
 var ModuleCmd = &cobra.Command{
@@ -119,12 +119,16 @@ func init() {
 	// Create flags
 	createCmd.Flags().StringVarP(&moduleName, "name", "n", "", "Module name")
 	createCmd.Flags().StringVarP(&moduleDescription, "description", "d", "", "Module description")
-	createCmd.Flags().StringVarP(&moduleStatus, "status", "s", "", "Module status")
+	createCmd.Flags().StringVarP(&moduleStatus, "status", "s", "backlog", "Module status (backlog, planned, in-progress, paused, completed, cancelled)")
 
 	// Edit flags
 	editCmd.Flags().StringVarP(&moduleName, "name", "n", "", "New module name")
 	editCmd.Flags().StringVarP(&moduleDescription, "description", "d", "", "New module description")
 	editCmd.Flags().StringVarP(&moduleStatus, "status", "s", "", "New module status")
+
+	deleteCmd.Flags().BoolVarP(&moduleDeleteYes, "yes", "y", false, "Skip confirmation")
+
+	_ = createCmd.MarkFlagRequired("name")
 }
 
 func runList(cmd *cobra.Command, args []string) error {
@@ -198,40 +202,6 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no project specified. Use --project flag or set default project")
 	}
 
-	// Interactive prompts if flags not provided
-	if moduleName == "" {
-		prompt := &survey.Input{
-			Message: "Module name:",
-			Help:    "e.g., Authentication, API Integration",
-		}
-		if err := survey.AskOne(prompt, &moduleName); err != nil {
-			return err
-		}
-	}
-
-	if moduleName == "" {
-		return fmt.Errorf("module name is required")
-	}
-
-	if moduleDescription == "" {
-		prompt := &survey.Input{
-			Message: "Description (optional):",
-		}
-		_ = survey.AskOne(prompt, &moduleDescription)
-	}
-
-	if moduleStatus == "" {
-		statusOptions := []string{"backlog", "planned", "in-progress", "paused", "completed", "cancelled"}
-		prompt := &survey.Select{
-			Message: "Status:",
-			Options: statusOptions,
-			Default: "backlog",
-		}
-		if err := survey.AskOne(prompt, &moduleStatus); err != nil {
-			return err
-		}
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err
@@ -260,59 +230,27 @@ func runEdit(cmd *cobra.Command, args []string) error {
 
 	moduleID := args[0]
 
-	client, err := api.NewClient()
-	if err != nil {
-		return err
-	}
-
-	// Get current module
-	module, err := client.GetModule(projectID, moduleID)
-	if err != nil {
-		return err
-	}
-
 	req := taskforge.UpdateModuleRequest{}
 
 	// Interactive mode if no flags provided
 	if moduleName == "" && moduleDescription == "" && moduleStatus == "" {
-		output.Info(fmt.Sprintf("Editing module: %s", module.Name))
+		return fmt.Errorf("no edit flags provided. Available: --name, --description, --status")
+	}
 
-		prompt := &survey.Input{
-			Message: "Name:",
-			Default: module.Name,
-		}
-		if err := survey.AskOne(prompt, &req.Name); err != nil {
-			return err
-		}
+	// Use provided flags
+	if moduleName != "" {
+		req.Name = moduleName
+	}
+	if moduleDescription != "" {
+		req.Description = moduleDescription
+	}
+	if moduleStatus != "" {
+		req.Status = moduleStatus
+	}
 
-		descPrompt := &survey.Input{
-			Message: "Description:",
-			Default: module.Description,
-		}
-		if err := survey.AskOne(descPrompt, &req.Description); err != nil {
-			return err
-		}
-
-		statusOptions := []string{"backlog", "planned", "in-progress", "paused", "completed", "cancelled"}
-		statusPrompt := &survey.Select{
-			Message: "Status:",
-			Options: statusOptions,
-			Default: module.Status,
-		}
-		if err := survey.AskOne(statusPrompt, &req.Status); err != nil {
-			return err
-		}
-	} else {
-		// Use provided flags
-		if moduleName != "" {
-			req.Name = moduleName
-		}
-		if moduleDescription != "" {
-			req.Description = moduleDescription
-		}
-		if moduleStatus != "" {
-			req.Status = moduleStatus
-		}
+	client, err := api.NewClient()
+	if err != nil {
+		return err
 	}
 
 	updatedModule, err := client.UpdateModule(projectID, moduleID, req)
@@ -333,20 +271,9 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	moduleID := args[0]
 
 	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete module %s?", moduleID),
-		Default: false,
+	if !moduleDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err

@@ -3,7 +3,6 @@ package label
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
@@ -15,6 +14,7 @@ var (
 	labelName        string
 	labelDescription string
 	labelColor       string
+	labelDeleteYes   bool
 )
 
 var LabelCmd = &cobra.Command{
@@ -78,12 +78,16 @@ func init() {
 	// Create flags
 	createCmd.Flags().StringVarP(&labelName, "name", "n", "", "Label name")
 	createCmd.Flags().StringVarP(&labelDescription, "description", "d", "", "Label description")
-	createCmd.Flags().StringVarP(&labelColor, "color", "c", "", "Label color (hex code, e.g., #EF4444)")
+	createCmd.Flags().StringVarP(&labelColor, "color", "c", "#EF4444", "Label color (hex code, e.g., #EF4444)")
 
 	// Edit flags
 	editCmd.Flags().StringVarP(&labelName, "name", "n", "", "New label name")
 	editCmd.Flags().StringVarP(&labelDescription, "description", "d", "", "New label description")
 	editCmd.Flags().StringVarP(&labelColor, "color", "c", "", "New label color")
+
+	deleteCmd.Flags().BoolVarP(&labelDeleteYes, "yes", "y", false, "Skip confirmation")
+
+	_ = createCmd.MarkFlagRequired("name")
 }
 
 func runList(cmd *cobra.Command, args []string) error {
@@ -157,39 +161,6 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no project specified. Use --project flag or set default project")
 	}
 
-	// Interactive prompts if flags not provided
-	if labelName == "" {
-		prompt := &survey.Input{
-			Message: "Label name:",
-			Help:    "e.g., Bug, Feature, High Priority",
-		}
-		if err := survey.AskOne(prompt, &labelName); err != nil {
-			return err
-		}
-	}
-
-	if labelName == "" {
-		return fmt.Errorf("label name is required")
-	}
-
-	if labelColor == "" {
-		prompt := &survey.Input{
-			Message: "Label color (hex code):",
-			Default: "#EF4444",
-			Help:    "Hex color code (e.g., #EF4444 for red, #3B82F6 for blue)",
-		}
-		if err := survey.AskOne(prompt, &labelColor); err != nil {
-			return err
-		}
-	}
-
-	if labelDescription == "" {
-		prompt := &survey.Input{
-			Message: "Description (optional):",
-		}
-		_ = survey.AskOne(prompt, &labelDescription)
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err
@@ -218,57 +189,27 @@ func runEdit(cmd *cobra.Command, args []string) error {
 
 	labelID := args[0]
 
-	client, err := api.NewClient()
-	if err != nil {
-		return err
-	}
-
-	// Get current label
-	label, err := client.GetLabel(projectID, labelID)
-	if err != nil {
-		return err
-	}
-
 	req := taskforge.UpdateLabelRequest{}
 
 	// Interactive mode if no flags provided
 	if labelName == "" && labelDescription == "" && labelColor == "" {
-		output.Info(fmt.Sprintf("Editing label: %s", label.Name))
+		return fmt.Errorf("no edit flags provided. Available: --name, --description, --color")
+	}
 
-		prompt := &survey.Input{
-			Message: "Name:",
-			Default: label.Name,
-		}
-		if err := survey.AskOne(prompt, &req.Name); err != nil {
-			return err
-		}
+	// Use provided flags
+	if labelName != "" {
+		req.Name = labelName
+	}
+	if labelDescription != "" {
+		req.Description = labelDescription
+	}
+	if labelColor != "" {
+		req.Color = labelColor
+	}
 
-		descPrompt := &survey.Input{
-			Message: "Description:",
-			Default: label.Description,
-		}
-		if err := survey.AskOne(descPrompt, &req.Description); err != nil {
-			return err
-		}
-
-		colorPrompt := &survey.Input{
-			Message: "Color:",
-			Default: label.Color,
-		}
-		if err := survey.AskOne(colorPrompt, &req.Color); err != nil {
-			return err
-		}
-	} else {
-		// Use provided flags
-		if labelName != "" {
-			req.Name = labelName
-		}
-		if labelDescription != "" {
-			req.Description = labelDescription
-		}
-		if labelColor != "" {
-			req.Color = labelColor
-		}
+	client, err := api.NewClient()
+	if err != nil {
+		return err
 	}
 
 	updatedLabel, err := client.UpdateLabel(projectID, labelID, req)
@@ -289,20 +230,9 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	labelID := args[0]
 
 	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete label %s?", labelID),
-		Default: false,
+	if !labelDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
 	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
-	}
-
 	client, err := api.NewClient()
 	if err != nil {
 		return err
