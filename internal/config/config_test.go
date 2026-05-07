@@ -52,7 +52,7 @@ func TestSaveConfig(t *testing.T) {
 	// Modify config
 	Cfg.DefaultWorkspace = "test-workspace"
 	Cfg.DefaultProject = "test-project"
-	Cfg.OutputFormat = "json"
+	Cfg.OutputFormat = "yaml"
 
 	// Save
 	err = SaveConfig()
@@ -65,7 +65,7 @@ func TestSaveConfig(t *testing.T) {
 
 	assert.Equal(t, "test-workspace", Cfg.DefaultWorkspace)
 	assert.Equal(t, "test-project", Cfg.DefaultProject)
-	assert.Equal(t, "json", Cfg.OutputFormat)
+	assert.Equal(t, "yaml", Cfg.OutputFormat)
 }
 
 func TestAPIKeyStorage(t *testing.T) {
@@ -99,7 +99,7 @@ func TestAPIKeyStorage(t *testing.T) {
 	assert.Error(t, err) // Should return error when key is deleted
 }
 
-func TestInitConfigRejectsTableOutputFormat(t *testing.T) {
+func TestInitConfigNormalizesInvalidOutputFormatToYAML(t *testing.T) {
 	tempDir := t.TempDir()
 	configDir := filepath.Join(tempDir, ".config", AppName)
 	err := os.MkdirAll(configDir, 0755)
@@ -112,11 +112,11 @@ func TestInitConfigRejectsTableOutputFormat(t *testing.T) {
 	SetConfigFile(configPath)
 
 	err = InitConfig()
-	require.Error(t, err)
-	assert.EqualError(t, err, `invalid output format "table": table output has been removed; supported formats are json, yaml`)
+	require.NoError(t, err)
+	assert.Equal(t, "yaml", Cfg.OutputFormat)
 }
 
-func TestInitConfigAllowInvalidOutputAcceptsTable(t *testing.T) {
+func TestInitConfigAllowInvalidOutputNormalizesToYAML(t *testing.T) {
 	tempDir := t.TempDir()
 	configDir := filepath.Join(tempDir, ".config", AppName)
 	err := os.MkdirAll(configDir, 0755)
@@ -130,7 +130,7 @@ func TestInitConfigAllowInvalidOutputAcceptsTable(t *testing.T) {
 
 	err = InitConfigAllowInvalidOutput()
 	require.NoError(t, err)
-	assert.Equal(t, "table", Cfg.OutputFormat)
+	assert.Equal(t, "yaml", Cfg.OutputFormat)
 }
 
 func TestLocalConfig(t *testing.T) {

@@ -147,12 +147,12 @@ func runList(cmd *cobra.Command, args []string) error {
 	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
 
 	type issueOutput struct {
-		ID       string            `table:"ID" json:"id"`
-		Sequence int               `table:"#" json:"sequence_id"`
-		Title    string            `table:"TITLE" json:"title"`
+		ID       string                `table:"ID" json:"id"`
+		Sequence int                   `table:"#" json:"sequence_id"`
+		Title    string                `table:"TITLE" json:"title"`
 		State    taskforge.StateOutput `table:"STATE" json:"state"`
-		Priority string            `table:"PRIORITY" json:"priority"`
-		Assignee string            `table:"ASSIGNEE" json:"assignee"`
+		Priority string                `table:"PRIORITY" json:"priority"`
+		Assignee string                `table:"ASSIGNEE" json:"assignee"`
 	}
 
 	var outputs []issueOutput
@@ -258,8 +258,8 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	output.Success(fmt.Sprintf("Created issue #%d", issue.SequenceID))
-	return nil
+	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
+	return formatter.Print(issue)
 }
 
 func runEdit(cmd *cobra.Command, args []string) error {
@@ -279,6 +279,9 @@ func runEdit(cmd *cobra.Command, args []string) error {
 	issue, err := resolveIssue(client, projectID, issueRef)
 	if err != nil {
 		return err
+	}
+	if issue.ProjectID != "" {
+		projectID = issue.ProjectID
 	}
 
 	req := taskforge.UpdateIssueRequest{}
@@ -334,8 +337,8 @@ func runEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	output.Success(fmt.Sprintf("Updated issue %d", updatedIssue.SequenceID))
-	return nil
+	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
+	return formatter.Print(updatedIssue)
 }
 
 func runDelete(cmd *cobra.Command, args []string) error {
@@ -351,7 +354,7 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err := resolveIssueID(client, projectID, issueRef)
+	projectID, issueID, err := resolveIssueContext(client, projectID, issueRef)
 	if err != nil {
 		return err
 	}
@@ -375,8 +378,8 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	output.Success(fmt.Sprintf("Deleted issue %s", issueRef))
-	return nil
+	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
+	return formatter.Print(map[string]string{"status": "deleted", "issue_ref": issueRef, "issue_id": issueID, "project_id": projectID})
 }
 
 func runSearch(cmd *cobra.Command, args []string) error {
@@ -400,11 +403,11 @@ func runSearch(cmd *cobra.Command, args []string) error {
 	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
 
 	type issueOutput struct {
-		ID       string            `table:"ID" json:"id"`
-		Sequence int               `table:"#" json:"sequence_id"`
-		Title    string            `table:"TITLE" json:"title"`
+		ID       string                `table:"ID" json:"id"`
+		Sequence int                   `table:"#" json:"sequence_id"`
+		Title    string                `table:"TITLE" json:"title"`
 		State    taskforge.StateOutput `table:"STATE" json:"state"`
-		Priority string            `table:"PRIORITY" json:"priority"`
+		Priority string                `table:"PRIORITY" json:"priority"`
 	}
 
 	var outputs []issueOutput

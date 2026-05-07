@@ -49,7 +49,7 @@ Get started:
   taskforge workspace members --search alice # Find assignable workspace users by name/email
   taskforge project list                  # List projects in current workspace
   taskforge issue list                    # List issues in current project`,
-	Version: version,
+	Version:      version,
 	SilenceUsage: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Skip config initialization for certain commands
@@ -103,7 +103,7 @@ func Execute() error {
 func init() {
 	rootCmd.PersistentFlags().StringVar(&workspaceSlug, "workspace", "", "TaskForge workspace slug (overrides config)")
 	rootCmd.PersistentFlags().StringVar(&projectID, "project", "", "TaskForge project ID (overrides config)")
-	rootCmd.PersistentFlags().StringVarP(&outputFmt, "output", "o", "", "Output format: json, yaml (overrides config)")
+	rootCmd.PersistentFlags().StringVarP(&outputFmt, "output", "o", "", "Output format: yaml (overrides config)")
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colored output")
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Config file path (default: ~/.config/taskforge/config.yaml)")
 

@@ -37,7 +37,7 @@ func setupTestEnvironment(t *testing.T) {
 
 	config.Cfg.APIHost = apiHost
 	config.Cfg.DefaultWorkspace = workspace
-	config.Cfg.OutputFormat = "json"
+	config.Cfg.OutputFormat = "yaml"
 
 	originalService := config.KeyringService
 	config.KeyringService = "taskforge-cmd-test"

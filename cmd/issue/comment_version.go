@@ -60,7 +60,7 @@ func runCommentVersionList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err := resolveIssueID(client, projectID, issueRef)
+	projectID, issueID, err := resolveIssueContext(client, projectID, issueRef)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func runCommentVersionGet(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err := resolveIssueID(client, projectID, issueRef)
+	projectID, issueID, err := resolveIssueContext(client, projectID, issueRef)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func runCommentVersionDiff(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err := resolveIssueID(client, projectID, issueRef)
+	projectID, issueID, err := resolveIssueContext(client, projectID, issueRef)
 	if err != nil {
 		return err
 	}

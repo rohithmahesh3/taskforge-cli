@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -131,10 +132,49 @@ func (c *Client) SearchIssues(query string) ([]taskforge.Issue, error) {
 	}
 
 	if err := c.Get(path, params, &response); err != nil {
+		var apiErr *APIError
+		if errors.As(err, &apiErr) && (apiErr.StatusCode == 400 || apiErr.StatusCode == 404) {
+			return c.searchIssuesFallback(query)
+		}
 		return nil, err
 	}
 
 	return response.Issues, nil
+}
+
+func (c *Client) searchIssuesFallback(query string) ([]taskforge.Issue, error) {
+	projects, err := c.ListProjects()
+	if err != nil {
+		return nil, err
+	}
+
+	needle := strings.ToLower(strings.TrimSpace(query))
+	if needle == "" {
+		return []taskforge.Issue{}, nil
+	}
+
+	var matches []taskforge.Issue
+	for _, project := range projects {
+		offset := 0
+		for {
+			issues, page, err := c.ListIssues(project.ID, IssueListOptions{Limit: 100, Offset: offset})
+			if err != nil {
+				return nil, err
+			}
+			for _, issue := range issues {
+				hay := strings.ToLower(strings.Join([]string{issue.ID, issue.Identifier, issue.Name, issue.Description}, " "))
+				if strings.Contains(hay, needle) {
+					matches = append(matches, issue)
+				}
+			}
+			if page == nil || !page.NextPageResults || len(issues) == 0 {
+				break
+			}
+			offset += len(issues)
+		}
+	}
+
+	return matches, nil
 }
 
 // PatchIssue applies RFC 6902-style JSON Patch operations to an issue

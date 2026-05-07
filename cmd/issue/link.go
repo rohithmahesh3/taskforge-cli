@@ -68,7 +68,7 @@ func runLinkList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err = resolveIssueID(client, projectID, issueID)
+	projectID, issueID, err = resolveIssueContext(client, projectID, issueID)
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func runLinkAdd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err = resolveIssueID(client, projectID, issueID)
+	projectID, issueID, err = resolveIssueContext(client, projectID, issueID)
 	if err != nil {
 		return err
 	}
@@ -192,7 +192,7 @@ func runLinkDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err = resolveIssueID(client, projectID, issueID)
+	projectID, issueID, err = resolveIssueContext(client, projectID, issueID)
 	if err != nil {
 		return err
 	}

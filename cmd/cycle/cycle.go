@@ -428,11 +428,11 @@ func runIssues(cmd *cobra.Command, args []string) error {
 	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
 
 	type issueOutput struct {
-		ID       string            `table:"ID" json:"id"`
-		Sequence int               `table:"#" json:"sequence_id"`
-		Title    string            `table:"TITLE" json:"title"`
+		ID       string                `table:"ID" json:"id"`
+		Sequence int                   `table:"#" json:"sequence_id"`
+		Title    string                `table:"TITLE" json:"title"`
 		State    taskforge.StateOutput `table:"STATE" json:"state"`
-		Priority string            `table:"PRIORITY" json:"priority"`
+		Priority string                `table:"PRIORITY" json:"priority"`
 	}
 
 	var outputs []issueOutput

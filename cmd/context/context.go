@@ -61,12 +61,10 @@ func getGlobalFlags() string {
 ` + "```" + `
 --workspace <slug:text>     Workspace slug (overrides config)
 --project <id:text>         Project ID (overrides config)
---output <format>           Output format: json | yaml
+--output <format>           Output format: yaml
 --no-color                  Disable colored output
 --config <path:text>        Config file path
 ` + "```" + `
-
-Commands below that include ` + "`[--output json]`" + ` support structured JSON output.
 
 `
 }
@@ -76,16 +74,27 @@ func getIssueCommands() string {
 ` + "```" + `
 ` + getIssueQuickStartCommands() + `
 taskforge issue delete <id:seq_id|uuid>
-taskforge issue search [--output json] <query:text>
+taskforge issue search <query:text>
+taskforge issue patch <issue-id:seq_id|uuid> --op <replace|diff|insert|delete> --field <name|description> [--actual <text>] [--value <text>] [--after <anchor>] [--diff <unified-diff>] [--file <patches.json>]
+
+# Issue Versions & Restore
+taskforge issue version list <issue-id:seq_id|uuid>
+taskforge issue version get <issue-id:seq_id|uuid> <version-num:int> --field <name|description>
+taskforge issue version diff <issue-id:seq_id|uuid> <version-num:int> --field <name|description>
+taskforge issue restore <issue-id:seq_id|uuid> [--version-num <int>]
 
 # Issue Comments
-taskforge issue comment list [--output json] <issue-id:seq_id|uuid>
+taskforge issue comment list <issue-id:seq_id|uuid>
 taskforge issue comment add <issue-id:seq_id|uuid> [--text <markdown:text>]
                         [--access <enum:INTERNAL|EXTERNAL>]
 taskforge issue comment delete <issue-id:seq_id|uuid> <comment-id:uuid>
+taskforge issue comment version list <issue-id:seq_id|uuid> <comment-id:uuid>
+taskforge issue comment version get <issue-id:seq_id|uuid> <comment-id:uuid> <version-num:int>
+taskforge issue comment version diff <issue-id:seq_id|uuid> <comment-id:uuid> <version-num:int>
+taskforge issue comment restore <issue-id:seq_id|uuid> <comment-id:uuid> [--version-num <int>]
 
 # Issue Links
-taskforge issue link list [--output json] <issue-id:seq_id|uuid>
+taskforge issue link list <issue-id:seq_id|uuid>
 taskforge issue link add <issue-id:seq_id|uuid> <url:text> [--title <text>]
 taskforge issue link delete <issue-id:seq_id|uuid> <link-id:uuid>
 
@@ -99,25 +108,25 @@ taskforge issue time edit <issue-id:seq_id|uuid> <worklog-id:uuid>
 taskforge issue time delete <issue-id:seq_id|uuid> <worklog-id:uuid>
 
 # Issue Attachments
-taskforge issue attachment list [--output json] <issue-id:seq_id|uuid>
+taskforge issue attachment list <issue-id:seq_id|uuid>
 taskforge issue attachment upload <issue-id:seq_id|uuid> <file-path:text>
 taskforge issue attachment edit <issue-id:seq_id|uuid> <attachment-id:uuid>
                            [--name <text>] [--archive | --unarchive]
 taskforge issue attachment delete <issue-id:seq_id|uuid> <attachment-id:uuid>
 
 # Issue Activity
-taskforge issue activity list [--output json] <issue-id:seq_id|uuid>
-taskforge issue activity view [--output json] <issue-id:seq_id|uuid> <activity-id:uuid>
+taskforge issue activity list <issue-id:seq_id|uuid>
+taskforge issue activity view <issue-id:seq_id|uuid> <activity-id:uuid>
 ` + "```" + `
 
 `
 }
 
 func getIssueQuickStartCommands() string {
-	return `taskforge issue list [--output json] [--state <id:uuid>] [--assignee <id:uuid>]
+	return `taskforge issue list [--state <id:uuid>] [--assignee <id:uuid>]
                  [--limit <count:int>]
 
-taskforge issue view [--output json] <id:seq_id|uuid>
+taskforge issue view <id:seq_id|uuid>
 
 taskforge issue create [--title <text>] [--description <markdown:text>]
                    [--priority <enum:none|low|medium|high|urgent>]
@@ -137,14 +146,14 @@ func GetIssueQuickStartCommands() string {
 func getModuleCommands() string {
 	return `## Module (aliases: mod)
 ` + "```" + `
-taskforge module list [--output json] [--archived]
-taskforge module view [--output json] <id:uuid>
+taskforge module list [--archived]
+taskforge module view <id:uuid>
 taskforge module create [--name <text>] [--description <markdown:text>]
                     [--status <enum:backlog|planned|in-progress|paused|completed|cancelled>]
 taskforge module edit <id:uuid> [--name <text>] [--description <markdown:text>] [--status <enum:...>]
 taskforge module delete <id:uuid>
 taskforge module archive <id:uuid>
-taskforge module issues [--output json] <id:uuid>
+taskforge module issues <id:uuid>
 taskforge module add-issues <module-id:uuid> <issue-ids:uuid...>
 taskforge module remove-issue <module-id:uuid> <issue-id:uuid>
 ` + "```" + `
@@ -155,8 +164,8 @@ taskforge module remove-issue <module-id:uuid> <issue-id:uuid>
 func getStateCommands() string {
 	return `## State (aliases: states)
 ` + "```" + `
-taskforge state list [--output json]
-taskforge state view [--output json] <id:uuid>
+taskforge state list
+taskforge state view <id:uuid>
 taskforge state create [--name <text>] [--description <markdown:text>]
                    [--color <hex:#RRGGBB>]
                    [--group <enum:backlog|unstarted|started|completed|cancelled>]
@@ -171,8 +180,8 @@ taskforge state delete <id:uuid>
 func getLabelCommands() string {
 	return `## Label (aliases: labels, tag)
 ` + "```" + `
-taskforge label list [--output json]
-taskforge label view [--output json] <id:uuid>
+taskforge label list
+taskforge label view <id:uuid>
 taskforge label create [--name <text>] [--description <markdown:text>] [--color <hex:#RRGGBB>]
 taskforge label edit <id:uuid> [--name <text>] [--description <markdown:text>] [--color <hex>]
 taskforge label delete <id:uuid>
@@ -184,8 +193,8 @@ taskforge label delete <id:uuid>
 func getIntakeCommands() string {
 	return `## Intake (aliases: inbox, requests)
 ` + "```" + `
-taskforge intake list [--output json]
-taskforge intake view [--output json] <id:uuid>
+taskforge intake list
+taskforge intake view <id:uuid>
 taskforge intake create [--name <text>] [--priority <enum:low|medium|high|urgent>]
 taskforge intake delete <id:uuid>
 ` + "```" + `
@@ -196,7 +205,7 @@ taskforge intake delete <id:uuid>
 func getTypeCommands() string {
 	return `## Type (aliases: issue-type)
 ` + "```" + `
-taskforge type list [--output json]
+taskforge type list
 taskforge type create [--name <text>] [--description <markdown:text>]
 taskforge type delete <id:uuid>
 ` + "```" + `
@@ -207,15 +216,15 @@ taskforge type delete <id:uuid>
 func getCycleCommands() string {
 	return `## Cycle (aliases: sprint)
 ` + "```" + `
-taskforge cycle list [--output json] [--archived]
-taskforge cycle view [--output json] <id:uuid>
+taskforge cycle list [--archived]
+taskforge cycle view <id:uuid>
 taskforge cycle create [--name <text>] [--description <markdown:text>]
                    [--start-date <YYYY-MM-DD>] [--end-date <YYYY-MM-DD>]
 taskforge cycle edit <id:uuid> [--name <text>] [--description <markdown:text>]
                  [--start-date <YYYY-MM-DD>] [--end-date <YYYY-MM-DD>]
 taskforge cycle delete <id:uuid>
 taskforge cycle archive <id:uuid>
-taskforge cycle issues [--output json] <id:uuid>
+taskforge cycle issues <id:uuid>
 taskforge cycle add-issues <cycle-id:uuid> <issue-ids:uuid...>
 taskforge cycle remove-issue <cycle-id:uuid> <issue-id:uuid>
 ` + "```" + `
@@ -226,11 +235,11 @@ taskforge cycle remove-issue <cycle-id:uuid> <issue-id:uuid>
 func getProjectCommands() string {
 	return `## Project (aliases: proj)
 ` + "```" + `
-taskforge project list [--output json]
+taskforge project list
 taskforge project create [<name:text>]
-taskforge project info [--output json] [<id:uuid>]
+taskforge project info [<id:uuid>]
 taskforge project delete <id:uuid>
-taskforge project members [--output json] [<id:uuid>]
+taskforge project members [<id:uuid>]
 ` + "```" + `
 
 `
@@ -241,7 +250,7 @@ func getWorkspaceCommands() string {
 ` + "```" + `
 taskforge workspace info [<slug:text>]
 taskforge workspace switch [<slug:text>]
-taskforge workspace members [--output json] [--search <text>] [--exact] [--limit <count:int>]
+taskforge workspace members [--search <text>] [--exact] [--limit <count:int>]
 ` + "```" + `
 
 `

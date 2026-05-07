@@ -19,11 +19,9 @@ func ValidateFormat(format string) error {
 	format = NormalizeFormat(format)
 
 	switch format {
-	case "json", "yaml":
+	case "yaml":
 		return nil
-	case "table":
-		return fmt.Errorf("invalid output format %q: table output has been removed; supported formats are json, yaml", format)
 	default:
-		return fmt.Errorf("invalid output format %q: supported formats are json, yaml", format)
+		return fmt.Errorf("invalid output format %q: supported format is yaml", format)
 	}
 }

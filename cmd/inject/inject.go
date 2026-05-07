@@ -80,6 +80,10 @@ func runInject(cmd *cobra.Command, args []string) error {
 	for _, file := range files {
 		result, err := processFile(file)
 		if err != nil {
+			if strings.Contains(err.Error(), "file does not exist") {
+				skipped = append(skipped, file)
+				continue
+			}
 			errors = append(errors, fmt.Sprintf("%s: %v", file, err))
 			continue
 		}
@@ -204,7 +208,7 @@ func generateContent() string {
 
 ## TaskForge CLI Task Management
 
-The TaskForge CLI provides command-line access to your Plane workspace for issue tracking, project management, and team collaboration.
+The TaskForge CLI provides command-line access to your TaskForge workspace for issue tracking, project management, and team collaboration.
 
 	`, markerStart, timestamp)
 
@@ -268,6 +272,7 @@ taskforge context --workspace --cycle --intake --project
 ### Important Notes
 
 - All entity references (assignees, labels, states) require UUIDs
+- Output is YAML-only (` + "`--output yaml`" + ` is optional because YAML is the default)
 - Use ` + "`" + `taskforge workspace members` + "`" + ` to get user IDs
 - Use ` + "`" + `taskforge state list` + "`" + ` to get state IDs
 - Use ` + "`" + `taskforge label list` + "`" + ` to get label IDs

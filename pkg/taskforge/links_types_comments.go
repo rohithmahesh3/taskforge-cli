@@ -57,8 +57,8 @@ type CreateIssueTypeRequest struct {
 	LogoProps   map[string]interface{} `json:"logo_props,omitempty"`
 	Level       int                    `json:"level,omitempty"`
 	IsActive    bool                   `json:"is_active,omitempty"`
-	IsEpic     bool                   `json:"is_epic,omitempty"`
-	IsDefault  bool                   `json:"is_default,omitempty"`
+	IsEpic      bool                   `json:"is_epic,omitempty"`
+	IsDefault   bool                   `json:"is_default,omitempty"`
 }
 
 // UpdateIssueTypeRequest represents a request to update an issue type
@@ -67,8 +67,8 @@ type UpdateIssueTypeRequest struct {
 	Description string                 `json:"description,omitempty"`
 	LogoProps   map[string]interface{} `json:"logo_props,omitempty"`
 	IsActive    bool                   `json:"is_active,omitempty"`
-	IsEpic     bool                   `json:"is_epic,omitempty"`
-	IsDefault  bool                   `json:"is_default,omitempty"`
+	IsEpic      bool                   `json:"is_epic,omitempty"`
+	IsDefault   bool                   `json:"is_default,omitempty"`
 }
 
 // Comment represents a comment on an issue

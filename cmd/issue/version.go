@@ -34,7 +34,9 @@ func init() {
 		RunE:  runVersionGet,
 	}
 	versionGetCmd.Flags().StringVarP(&versionField, "field", "f", "", "Field to retrieve version for (required, e.g. name, description)")
-	versionGetCmd.MarkFlagRequired("field")
+	if err := versionGetCmd.MarkFlagRequired("field"); err != nil {
+		panic(err)
+	}
 
 	versionDiffCmd := &cobra.Command{
 		Use:   "diff <issue-id> <version-num>",
@@ -43,7 +45,9 @@ func init() {
 		RunE:  runVersionDiff,
 	}
 	versionDiffCmd.Flags().StringVarP(&versionField, "field", "f", "", "Field to view diff for (required, e.g. name, description)")
-	versionDiffCmd.MarkFlagRequired("field")
+	if err := versionDiffCmd.MarkFlagRequired("field"); err != nil {
+		panic(err)
+	}
 
 	versionCmd.AddCommand(versionListCmd)
 	versionCmd.AddCommand(versionGetCmd)
@@ -65,7 +69,7 @@ func runVersionList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err := resolveIssueID(client, projectID, issueRef)
+	projectID, issueID, err := resolveIssueContext(client, projectID, issueRef)
 	if err != nil {
 		return err
 	}
@@ -124,7 +128,7 @@ func runVersionGet(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err := resolveIssueID(client, projectID, issueRef)
+	projectID, issueID, err := resolveIssueContext(client, projectID, issueRef)
 	if err != nil {
 		return err
 	}
@@ -160,7 +164,7 @@ func runVersionDiff(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err := resolveIssueID(client, projectID, issueRef)
+	projectID, issueID, err := resolveIssueContext(client, projectID, issueRef)
 	if err != nil {
 		return err
 	}

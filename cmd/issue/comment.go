@@ -73,7 +73,7 @@ func runCommentList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err = resolveIssueID(client, projectID, issueID)
+	projectID, issueID, err = resolveIssueContext(client, projectID, issueID)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func runCommentAdd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err = resolveIssueID(client, projectID, issueID)
+	projectID, issueID, err = resolveIssueContext(client, projectID, issueID)
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func runCommentDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID, err = resolveIssueID(client, projectID, issueID)
+	projectID, issueID, err = resolveIssueContext(client, projectID, issueID)
 	if err != nil {
 		return err
 	}

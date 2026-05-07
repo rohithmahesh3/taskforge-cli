@@ -51,5 +51,5 @@ func TestPersistentPreRunEAllowsOutputRecovery(t *testing.T) {
 
 	err = rootCmd.PersistentPreRunE(cmd, []string{"output", "yaml"})
 	require.NoError(t, err)
-	assert.Equal(t, "table", cfg.Cfg.OutputFormat)
+	assert.Equal(t, "yaml", cfg.Cfg.OutputFormat)
 }

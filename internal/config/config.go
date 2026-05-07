@@ -93,8 +93,9 @@ func initConfig(validateOutput bool) error {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 	if err := output.ValidateFormat(Cfg.OutputFormat); err != nil {
+		Cfg.OutputFormat = output.DefaultFormat
 		if validateOutput {
-			return err
+			viper.Set("output_format", Cfg.OutputFormat)
 		}
 	} else {
 		Cfg.OutputFormat = output.NormalizeFormat(Cfg.OutputFormat)

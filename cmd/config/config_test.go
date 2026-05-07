@@ -10,25 +10,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRunSetOutputAcceptsStructuredFormats(t *testing.T) {
-	for _, format := range []string{"yaml", "json"} {
-		t.Run(format, func(t *testing.T) {
-			setupConfigTest(t)
+func TestRunSetOutputAcceptsYAMLOnly(t *testing.T) {
+	setupConfigTest(t)
 
-			err := runSet(nil, []string{"output", format})
-			require.NoError(t, err)
-			assert.Equal(t, format, internalconfig.Cfg.OutputFormat)
-		})
-	}
+	err := runSet(nil, []string{"output", "yaml"})
+	require.NoError(t, err)
+	assert.Equal(t, "yaml", internalconfig.Cfg.OutputFormat)
 }
 
-func TestRunSetOutputRejectsTable(t *testing.T) {
+func TestRunSetOutputRejectsNonYAML(t *testing.T) {
 	setupConfigTest(t)
 	initial := internalconfig.Cfg.OutputFormat
 
-	err := runSet(nil, []string{"output", "table"})
+	err := runSet(nil, []string{"output", "json"})
 	require.Error(t, err)
-	assert.EqualError(t, err, `invalid output format "table": table output has been removed; supported formats are json, yaml`)
+	assert.EqualError(t, err, `invalid output format "json": supported format is yaml`)
 	assert.Equal(t, initial, internalconfig.Cfg.OutputFormat)
 }
 

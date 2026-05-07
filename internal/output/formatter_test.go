@@ -68,17 +68,16 @@ func TestFormatterPrintRejectsTable(t *testing.T) {
 
 	err := formatter.Print(taskforge.Issue{Name: "Probe"})
 	require.Error(t, err)
-	assert.EqualError(t, err, `invalid output format "table": table output has been removed; supported formats are json, yaml`)
+	assert.EqualError(t, err, `invalid output format "table": supported format is yaml`)
 }
 
 func TestValidateFormat(t *testing.T) {
 	require.NoError(t, ValidateFormat(""))
-	require.NoError(t, ValidateFormat("json"))
 	require.NoError(t, ValidateFormat("yaml"))
 
 	err := ValidateFormat("bogus")
 	require.Error(t, err)
-	assert.EqualError(t, err, `invalid output format "bogus": supported formats are json, yaml`)
+	assert.EqualError(t, err, `invalid output format "bogus": supported format is yaml`)
 }
 
 func captureStdout(t *testing.T, fn func() error) (string, error) {

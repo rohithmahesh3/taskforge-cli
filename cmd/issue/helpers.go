@@ -25,13 +25,18 @@ func resolveIssue(client *api.Client, projectID, ref string) (*taskforge.Issue, 
 	return client.GetIssueByIdentifier(ref)
 }
 
-func resolveIssueID(client *api.Client, projectID, ref string) (string, error) {
+func resolveIssueContext(client *api.Client, projectID, ref string) (string, string, error) {
 	issue, err := resolveIssue(client, projectID, ref)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return issue.ID, nil
+	resolvedProjectID := strings.TrimSpace(issue.ProjectID)
+	if resolvedProjectID == "" {
+		resolvedProjectID = projectID
+	}
+
+	return resolvedProjectID, issue.ID, nil
 }
 
 func looksLikeUUID(s string) bool {

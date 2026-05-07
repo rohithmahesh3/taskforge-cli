@@ -1,7 +1,6 @@
 package output
 
 import (
-	"encoding/json"
 	"os"
 
 	"github.com/fatih/color"
@@ -31,25 +30,7 @@ func (f *Formatter) Print(data interface{}) error {
 		return err
 	}
 
-	switch format {
-	case "json":
-		return f.printJSON(data)
-	case "yaml":
-		return f.printYAML(data)
-	}
-
-	return nil
-}
-
-func (f *Formatter) printJSON(data interface{}) error {
-	normalized, err := normalizeStructuredOutput(data)
-	if err != nil {
-		return err
-	}
-
-	encoder := json.NewEncoder(os.Stdout)
-	encoder.SetIndent("", "  ")
-	return encoder.Encode(normalized)
+	return f.printYAML(data)
 }
 
 func (f *Formatter) printYAML(data interface{}) error {
