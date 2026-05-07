@@ -10,6 +10,7 @@ import (
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var ProjectCmd = &cobra.Command{
@@ -121,9 +122,14 @@ func runList(cmd *cobra.Command, args []string) error {
 
 func runCreate(cmd *cobra.Command, args []string) error {
 	// Determine if non-interactive mode should be used
-	// Non-interactive: any of the flags (--name, --identifier, --description) are provided
-	// or a positional arg is provided
-	nonInteractive := cmd.Flags().Changed("name") || cmd.Flags().Changed("identifier") || cmd.Flags().Changed("description")
+	// Non-interactive: any create flag provided, positional arg provided, or stdin is not a TTY.
+	nonInteractive :=
+		cmd.Flags().Changed("name") ||
+		cmd.Flags().Changed("identifier") ||
+		cmd.Flags().Changed("description") ||
+		cmd.Flags().Changed("set-default") ||
+		len(args) > 0 ||
+		!term.IsTerminal(0)
 
 	var name, identifier string
 
@@ -206,7 +212,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		output.Info("Set as default project")
-	} else if !cmd.Flags().Changed("set-default") {
+	} else if !cmd.Flags().Changed("set-default") && !nonInteractive {
 		// Interactive mode: ask if user wants to set as default
 		var setDefault bool
 		confirmPrompt := &survey.Confirm{

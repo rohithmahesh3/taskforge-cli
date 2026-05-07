@@ -303,6 +303,8 @@ type UploadData struct {
 }
 
 type UploadCredentials struct {
+	ID         string            `json:"id,omitempty"`
+	Upload     UploadData        `json:"upload,omitempty"`
 	UploadData UploadData        `json:"upload_data,omitempty"`
 	AssetID    string            `json:"asset_id,omitempty"`
 	Attachment Attachment        `json:"attachment,omitempty"`
@@ -312,6 +314,10 @@ type UploadCredentials struct {
 }
 
 func (u UploadCredentials) UploadTarget() UploadData {
+	if u.Upload.URL != "" {
+		return u.Upload
+	}
+
 	if u.UploadData.URL != "" {
 		return u.UploadData
 	}

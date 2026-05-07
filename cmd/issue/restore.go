@@ -51,15 +51,6 @@ func runRestore(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	issueID := issueRef
-	if !looksLikeUUID(issueRef) {
-		var resolveErr error
-		projectID, issueID, resolveErr = resolveIssueContext(client, projectID, issueRef)
-		if resolveErr != nil {
-			return resolveErr
-		}
-	}
-
 	confirm := restoreYes
 	if !confirm {
 		if !term.IsTerminal(int(os.Stdin.Fd())) {
@@ -78,7 +69,7 @@ func runRestore(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	issue, err := client.RestoreIssue(projectID, issueID, restoreVersionNum)
+	issue, err := client.RestoreIssue(projectID, issueRef, restoreVersionNum)
 	if err != nil {
 		return fmt.Errorf("failed to restore issue: %w", err)
 	}

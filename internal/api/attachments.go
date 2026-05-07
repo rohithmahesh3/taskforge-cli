@@ -114,6 +114,12 @@ func (c *Client) UploadAttachment(projectID, issueID, filePath string) (*taskfor
 		return nil, err
 	}
 
+	// Upload target is served by TaskForge API and requires API key auth.
+	req.Header.Set("X-API-Key", c.APIKey)
+	if c.Workspace != "" {
+		req.Header.Set("X-Workspace", c.Workspace)
+	}
+
 	if seeker, ok := requestBody.(io.Seeker); ok {
 		size, err := seeker.Seek(0, io.SeekEnd)
 		if err != nil {
@@ -143,6 +149,20 @@ func (c *Client) UploadAttachment(projectID, issueID, filePath string) (*taskfor
 	attachmentID := credentials.AssetID
 	if attachmentID == "" {
 		attachmentID = credentials.Attachment.ID
+	}
+	if attachmentID == "" {
+		attachmentID = credentials.ID
+	}
+	if attachmentID == "" {
+		attachments, listErr := c.ListAttachments(projectID, issueID)
+		if listErr == nil {
+			for _, candidate := range attachments {
+				if candidate.FileName == filename && !candidate.IsUploaded {
+					attachmentID = candidate.ID
+					break
+				}
+			}
+		}
 	}
 	if attachmentID == "" {
 		return nil, fmt.Errorf("attachment ID missing from credentials response")
