@@ -97,16 +97,20 @@ func runList(cmd *cobra.Command, args []string) error {
 		ID     string `table:"ID" json:"id"`
 		Status string `table:"STATUS" json:"status_formatted"`
 		Source string `table:"SOURCE" json:"source,omitempty"`
-		Issue  string `table:"ISSUE" json:"issue,omitempty"` // Display issue ID from FlexibleState
+		Issue  string `table:"ISSUE" json:"issue,omitempty"` // Display issue ID or name from FlexibleIssue
 	}
 
 	var outputs []intakeOutput
 	for _, i := range intakeIssues {
+		issueDisplay := i.Issue.ID
+		if !i.Issue.IsUUID && i.Issue.Name != "" {
+			issueDisplay = i.Issue.Name
+		}
 		outputs = append(outputs, intakeOutput{
 			ID:     i.ID,
 			Status: formatIntakeStatus(i.Status),
 			Source: i.Source,
-			Issue:  i.Issue.ID,
+			Issue:  issueDisplay,
 		})
 	}
 

@@ -32,7 +32,7 @@ func TestClient_RestoreIssuePayloadUsesVersion(t *testing.T) {
 	assert.False(t, hasLegacy)
 }
 
-func TestClient_RestoreCommentPayloadUsesVersionNumber(t *testing.T) {
+func TestClient_RestoreCommentPayloadUsesVersion(t *testing.T) {
 	var body map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "POST", r.Method)
@@ -47,7 +47,7 @@ func TestClient_RestoreCommentPayloadUsesVersionNumber(t *testing.T) {
 	client := &Client{HTTPClient: &http.Client{Timeout: DefaultTimeout}, BaseURL: server.URL, APIKey: "k", Workspace: "ws"}
 	_, err := client.RestoreComment("p-1", "i-1", "c-1", 2)
 	require.NoError(t, err)
-	assert.EqualValues(t, 2, body["version_number"])
+	assert.EqualValues(t, 2, body["version"])
 	_, hasLegacy := body["version_num"]
 	assert.False(t, hasLegacy)
 }

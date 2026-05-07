@@ -109,11 +109,12 @@ func runAttachmentList(cmd *cobra.Command, args []string) error {
 
 	var outputs []attachmentOutput
 	for _, a := range attachments {
+		name := attachmentNameForDisplay(a)
 		outputs = append(outputs, attachmentOutput{
 			ID:       a.ID,
-			Name:     a.Attributes.Name,
-			Size:     formatBytes(a.Attributes.Size),
-			Type:     a.Attributes.Type,
+			Name:     name,
+			Size:     formatBytes(a.FileSize.Int64()),
+			Type:     a.FileType,
 			Uploaded: a.CreatedAt.Format("2006-01-02"),
 		})
 	}
@@ -130,7 +131,6 @@ func runAttachmentUpload(cmd *cobra.Command, args []string) error {
 	issueID := args[0]
 	filePath := args[1]
 
-	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return fmt.Errorf("file not found: %s", filePath)
 	}
@@ -150,7 +150,7 @@ func runAttachmentUpload(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	output.Success(fmt.Sprintf("Uploaded '%s' (%s)", attachment.Attributes.Name, formatBytes(attachment.Attributes.Size)))
+	output.Success(fmt.Sprintf("Uploaded '%s' (%s)", attachmentNameForDisplay(*attachment), formatBytes(attachment.FileSize.Int64())))
 	return nil
 }
 
@@ -174,12 +174,10 @@ func runAttachmentEdit(cmd *cobra.Command, args []string) error {
 	}
 
 	req := taskforge.UpdateAttachmentRequest{}
-
 	if attachmentName != "" {
 		req.Attributes.Name = attachmentName
 	}
 
-	// Handle archive/unarchive flags
 	if cmd.Flags().Changed("archive") {
 		req.IsArchived = true
 	} else if cmd.Flags().Changed("unarchive") {
@@ -191,7 +189,7 @@ func runAttachmentEdit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	output.Success(fmt.Sprintf("Updated attachment '%s'", attachment.Attributes.Name))
+	output.Success(fmt.Sprintf("Updated attachment '%s'", attachmentNameForDisplay(*attachment)))
 	return nil
 }
 
@@ -222,7 +220,13 @@ func runAttachmentDelete(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// formatBytes converts bytes to human-readable format
+func attachmentNameForDisplay(a taskforge.Attachment) string {
+	if a.FileName != "" {
+		return a.FileName
+	}
+	return a.ID
+}
+
 func formatBytes(bytes int64) string {
 	const (
 		KB = 1024

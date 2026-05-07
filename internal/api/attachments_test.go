@@ -117,11 +117,9 @@ func TestUploadAttachment(t *testing.T) {
 			err = json.NewEncoder(w).Encode(taskforge.Attachment{
 				ID:         "attachment-456",
 				IsUploaded: true,
-				Attributes: taskforge.AttachmentAttributes{
-					Name: "upload.txt",
-					Size: 12,
-					Type: "text/plain",
-				},
+				FileName:   "upload.txt",
+				FileSize:   taskforge.FlexibleInt64(12),
+				FileType:   "text/plain",
 			})
 			require.NoError(t, err)
 		default:
@@ -146,7 +144,7 @@ func TestUploadAttachment(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "attachment-456", attachment.ID)
 	assert.True(t, attachment.IsUploaded)
-	assert.Equal(t, "upload.txt", attachment.Attributes.Name)
+	assert.Equal(t, "upload.txt", attachment.FileName)
 }
 
 func TestGetAttachment(t *testing.T) {

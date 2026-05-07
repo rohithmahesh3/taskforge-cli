@@ -167,7 +167,7 @@ func (c *Client) searchIssuesFallback(query string) ([]taskforge.Issue, error) {
 					matches = append(matches, issue)
 				}
 			}
-			if page == nil || !page.NextPageResults || len(issues) == 0 {
+			if page == nil || page.Next == nil || len(issues) == 0 {
 				break
 			}
 			offset += len(issues)
@@ -291,7 +291,7 @@ func (c *Client) GetCommentVersionDiff(projectID, issueID, commentID string, ver
 func (c *Client) RestoreComment(projectID, issueID, commentID string, versionNum int) (*taskforge.Comment, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/comments/%s/restore/", c.Workspace, projectID, issueID, commentID)
 
-	req := taskforge.CommentRestoreRequest{VersionNumber: versionNum}
+	req := taskforge.CommentRestoreRequest{Version: versionNum}
 
 	var comment taskforge.Comment
 	if err := c.Post(path, req, &comment); err != nil {

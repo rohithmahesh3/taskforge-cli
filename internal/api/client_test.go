@@ -231,9 +231,9 @@ func TestClient_ListIssues(t *testing.T) {
 		response := Response{
 			Results: mustMarshal(t, mockIssues),
 			Pagination: Pagination{
-				NextCursor:      "20:1:0",
-				NextPageResults: false,
-				Count:           1,
+				Next:  ptrString("/api/v1/workspaces/test-workspace/projects/proj-1/work-items/?offset=20&limit=25"),
+				Prev:  nil,
+				Count: 1,
 			},
 		}
 		w.WriteHeader(http.StatusOK)
@@ -259,7 +259,7 @@ func TestClient_ListIssues(t *testing.T) {
 	assert.Len(t, issues, 1)
 	assert.Equal(t, "Test Issue", issues[0].Name)
 	assert.NotNil(t, pagination)
-	assert.Equal(t, "20:1:0", pagination.NextCursor)
+	assert.Equal(t, "/api/v1/workspaces/test-workspace/projects/proj-1/work-items/?offset=20&limit=25", *pagination.Next)
 }
 
 func TestClient_GetIssueByIdentifier(t *testing.T) {
@@ -389,6 +389,10 @@ func TestClient_DeleteIssue(t *testing.T) {
 
 	err := client.DeleteIssue("proj-1", "issue-1")
 	require.NoError(t, err)
+}
+
+func ptrString(value string) *string {
+	return &value
 }
 
 func mustMarshal(t *testing.T, v interface{}) []byte {

@@ -27,13 +27,10 @@ type Client struct {
 }
 
 type Pagination struct {
-	NextCursor      string `json:"next_cursor"`
-	PrevCursor      string `json:"prev_cursor"`
-	NextPageResults bool   `json:"next_page_results"`
-	PrevPageResults bool   `json:"prev_page_results"`
-	Count           int    `json:"count"`
-	TotalPages      int    `json:"total_pages"`
-	TotalResults    int    `json:"total_results"`
+	Count  int     `json:"count"`
+	Next   *string `json:"next"`
+	Prev   *string `json:"prev"`
+	Offset *int    `json:"offset,omitempty"`
 }
 
 type Response struct {

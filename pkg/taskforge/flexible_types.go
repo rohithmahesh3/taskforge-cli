@@ -219,6 +219,95 @@ func (fi FlexibleInt64) Int64() int64 {
 	return int64(fi)
 }
 
+// FlexibleIssue can unmarshal from either a string (UUID) or an Issue object.
+// Used for IntakeIssue.Issue which the API may return as a UUID or expanded object.
+type FlexibleIssue struct {
+	ID          string `json:"id"`
+	Identifier  string `json:"identifier,omitempty"`
+	SequenceID  int    `json:"sequence_id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Priority    string `json:"priority,omitempty"`
+	ProjectID   string `json:"project_id,omitempty"`
+	WorkspaceID string `json:"workspace_id,omitempty"`
+	Project     string `json:"project,omitempty"`
+	Workspace   string `json:"workspace,omitempty"`
+	IsUUID      bool   `json:"-"`
+}
+
+func (fi *FlexibleIssue) UnmarshalJSON(data []byte) error {
+	var raw interface{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	switch v := raw.(type) {
+	case string:
+		fi.ID = v
+		fi.IsUUID = true
+		return nil
+	case map[string]interface{}:
+		fi.ID = getString(v, "id")
+		fi.Identifier = getString(v, "identifier")
+		fi.Name = getString(v, "name")
+		fi.Description = getString(v, "description")
+		fi.Priority = getString(v, "priority")
+		fi.ProjectID = getString(v, "project_id")
+		if fi.ProjectID == "" {
+			fi.ProjectID = getString(v, "project")
+		}
+		fi.WorkspaceID = getString(v, "workspace_id")
+		if fi.WorkspaceID == "" {
+			fi.WorkspaceID = getString(v, "workspace")
+		}
+		fi.Project = getString(v, "project")
+		fi.Workspace = getString(v, "workspace")
+		if seq, ok := v["sequence_id"]; ok {
+			if f, ok := seq.(float64); ok {
+				fi.SequenceID = int(f)
+			}
+		}
+		fi.IsUUID = false
+		return nil
+	default:
+		return fmt.Errorf("issue must be string or object, got %T", raw)
+	}
+}
+
+func (fi FlexibleIssue) MarshalJSON() ([]byte, error) {
+	if fi.IsUUID {
+		return json.Marshal(fi.ID)
+	}
+	return json.Marshal(map[string]interface{}{
+		"id":           fi.ID,
+		"identifier":   fi.Identifier,
+		"sequence_id":  fi.SequenceID,
+		"name":         fi.Name,
+		"description":  fi.Description,
+		"priority":     fi.Priority,
+		"project_id":   fi.ProjectID,
+		"workspace_id": fi.WorkspaceID,
+		"project":      fi.Project,
+		"workspace":    fi.Workspace,
+	})
+}
+
+// ToIssue converts FlexibleIssue to a basic Issue value.
+func (fi *FlexibleIssue) ToIssue() Issue {
+	return Issue{
+		ID:          fi.ID,
+		Identifier:  fi.Identifier,
+		SequenceID:  fi.SequenceID,
+		Name:        fi.Name,
+		Description: fi.Description,
+		Priority:    fi.Priority,
+		ProjectID:   fi.ProjectID,
+		WorkspaceID: fi.WorkspaceID,
+		Project:     fi.Project,
+		Workspace:   fi.Workspace,
+	}
+}
+
 // StateOutput represents a state for JSON/YAML output with state_id and state_name
 type StateOutput struct {
 	ID   string `json:"state_id"`

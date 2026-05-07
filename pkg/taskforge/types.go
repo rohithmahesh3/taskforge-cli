@@ -60,8 +60,10 @@ type Issue struct {
 	UpdatedAt     time.Time       `json:"updated_at"`
 	CreatedBy     string          `json:"created_by,omitempty"`
 	UpdatedBy     string          `json:"updated_by,omitempty"`
-	ProjectID     string          `json:"project,omitempty"`
-	WorkspaceID   string          `json:"workspace,omitempty"`
+	ProjectID     string          `json:"project_id,omitempty"`
+	Project       string          `json:"project,omitempty"`
+	WorkspaceID   string          `json:"workspace_id,omitempty"`
+	Workspace     string          `json:"workspace,omitempty"`
 	IsDraft       bool            `json:"is_draft,omitempty"`
 	ArchivedAt    string          `json:"archived_at,omitempty"`
 }
@@ -267,7 +269,9 @@ type WorklogTotal struct {
 
 type Attachment struct {
 	ID              string                 `json:"id"`
-	Attributes      AttachmentAttributes   `json:"attributes,omitempty"`
+	FileName        string                 `json:"file_name,omitempty"`
+	FileType        string                 `json:"file_type,omitempty"`
+	FileSize        FlexibleInt64          `json:"file_size,omitempty"`
 	Asset           string                 `json:"asset,omitempty"`
 	EntityType      string                 `json:"entity_type,omitempty"`
 	IsDeleted       bool                   `json:"is_deleted,omitempty"`
@@ -277,8 +281,11 @@ type Attachment struct {
 	StorageMetadata map[string]interface{} `json:"storage_metadata,omitempty"`
 	CreatedBy       string                 `json:"created_by,omitempty"`
 	UpdatedBy       string                 `json:"updated_by,omitempty"`
+	WorkspaceID     string                 `json:"workspace_id,omitempty"`
 	Workspace       string                 `json:"workspace,omitempty"`
+	ProjectID       string                 `json:"project_id,omitempty"`
 	Project         string                 `json:"project,omitempty"`
+	IssueID         string                 `json:"issue_id,omitempty"`
 	Issue           string                 `json:"issue,omitempty"`
 	CreatedAt       time.Time              `json:"created_at,omitempty"`
 	UpdatedAt       time.Time              `json:"updated_at,omitempty"`
@@ -321,9 +328,11 @@ type IntakeIssue struct {
 	SnoozedTill string        `json:"snoozed_till,omitempty"`
 	Source      string        `json:"source,omitempty"`
 	Inbox       string        `json:"inbox,omitempty"`
-	Issue       FlexibleState `json:"issue,omitempty"`
+	Issue       FlexibleIssue `json:"issue,omitempty"`
 	DuplicateTo string        `json:"duplicate_to,omitempty"`
+	ProjectID   string        `json:"project_id,omitempty"`
 	Project     string        `json:"project,omitempty"`
+	WorkspaceID string        `json:"workspace_id,omitempty"`
 	Workspace   string        `json:"workspace,omitempty"`
 	CreatedBy   string        `json:"created_by,omitempty"`
 	UpdatedBy   string        `json:"updated_by,omitempty"`
@@ -338,23 +347,28 @@ type CreateIntakeIssueRequest struct {
 }
 
 type Activity struct {
-	ID            string    `json:"id"`
-	Verb          string    `json:"verb"`
-	Field         string    `json:"field,omitempty"`
-	OldValue      string    `json:"old_value,omitempty"`
-	NewValue      string    `json:"new_value,omitempty"`
-	Comment       string    `json:"comment,omitempty"`
-	Attachments   []string  `json:"attachments,omitempty"`
-	OldIdentifier string    `json:"old_identifier,omitempty"`
-	NewIdentifier string    `json:"new_identifier,omitempty"`
-	Epoch         float64   `json:"epoch,omitempty"`
-	Project       string    `json:"project,omitempty"`
-	Workspace     string    `json:"workspace,omitempty"`
-	Issue         string    `json:"issue,omitempty"`
-	IssueComment  string    `json:"issue_comment,omitempty"`
-	Actor         string    `json:"actor,omitempty"`
-	CreatedAt     time.Time `json:"created_at,omitempty"`
-	UpdatedAt     time.Time `json:"updated_at,omitempty"`
+	ID             string    `json:"id"`
+	Verb           string    `json:"verb"`
+	Field          string    `json:"field,omitempty"`
+	OldValue       string    `json:"old_value,omitempty"`
+	NewValue       string    `json:"new_value,omitempty"`
+	Comment        string    `json:"comment,omitempty"`
+	Attachments    []string  `json:"attachments,omitempty"`
+	OldIdentifier  string    `json:"old_identifier,omitempty"`
+	NewIdentifier  string    `json:"new_identifier,omitempty"`
+	Epoch          float64   `json:"epoch,omitempty"`
+	ProjectID      string    `json:"project_id,omitempty"`
+	Project        string    `json:"project,omitempty"`
+	WorkspaceID    string    `json:"workspace_id,omitempty"`
+	Workspace      string    `json:"workspace,omitempty"`
+	IssueID        string    `json:"issue_id,omitempty"`
+	Issue          string    `json:"issue,omitempty"`
+	IssueCommentID string    `json:"issue_comment_id,omitempty"`
+	IssueComment   string    `json:"issue_comment,omitempty"`
+	ActorID        string    `json:"actor_id,omitempty"`
+	Actor          string    `json:"actor,omitempty"`
+	CreatedAt      time.Time `json:"created_at,omitempty"`
+	UpdatedAt      time.Time `json:"updated_at,omitempty"`
 }
 
 type UpdateAttachmentRequest struct {
@@ -410,7 +424,7 @@ type VersionHistory struct {
 
 // RestoreRequest represents a request to restore a deleted entity
 type RestoreRequest struct {
-	VersionNum int `json:"version_num"`
+	Version int `json:"version"`
 }
 
 type IssueRestoreRequest struct {
@@ -418,5 +432,5 @@ type IssueRestoreRequest struct {
 }
 
 type CommentRestoreRequest struct {
-	VersionNumber int `json:"version_number"`
+	Version int `json:"version"`
 }

@@ -4,17 +4,20 @@ import "time"
 
 // Link represents an external link attached to an issue
 type Link struct {
-	ID        string                 `json:"id"`
-	Title     string                 `json:"title"`
-	URL       string                 `json:"url"`
-	Metadata  map[string]interface{} `json:"metadata,omitempty"`
-	CreatedAt time.Time              `json:"created_at"`
-	UpdatedAt time.Time              `json:"updated_at"`
-	CreatedBy string                 `json:"created_by"`
-	UpdatedBy string                 `json:"updated_by"`
-	Project   string                 `json:"project"`
-	Workspace string                 `json:"workspace"`
-	Issue     string                 `json:"issue"`
+	ID          string                 `json:"id"`
+	Title       string                 `json:"title"`
+	URL         string                 `json:"url"`
+	Metadata    map[string]interface{} `json:"metadata,omitempty"`
+	CreatedAt   time.Time              `json:"created_at"`
+	UpdatedAt   time.Time              `json:"updated_at"`
+	CreatedBy   string                 `json:"created_by"`
+	UpdatedBy   string                 `json:"updated_by"`
+	ProjectID   string                 `json:"project_id,omitempty"`
+	Project     string                 `json:"project,omitempty"`
+	WorkspaceID string                 `json:"workspace_id,omitempty"`
+	Workspace   string                 `json:"workspace,omitempty"`
+	IssueID     string                 `json:"issue_id,omitempty"`
+	Issue       string                 `json:"issue,omitempty"`
 }
 
 // CreateLinkRequest represents a request to create a link
@@ -38,7 +41,7 @@ type IssueType struct {
 	Level          int                    `json:"level"`
 	IsActive       bool                   `json:"is_active"`
 	IsEpic         bool                   `json:"is_epic"`
-	IsDefault      bool                   `json:"is_default"`
+	IsDefault      bool                   `json:"default"`
 	DeletedAt      *time.Time             `json:"deleted_at,omitempty"`
 	Workspace      string                 `json:"workspace"`
 	Project        string                 `json:"project,omitempty"`
@@ -82,10 +85,14 @@ type Comment struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 	CreatedBy      string    `json:"created_by"`
 	UpdatedBy      string    `json:"updated_by"`
-	Project        string    `json:"project"`
-	Workspace      string    `json:"workspace"`
-	Issue          string    `json:"issue"`
-	Actor          string    `json:"actor"`
+	ProjectID      string    `json:"project_id,omitempty"`
+	Project        string    `json:"project,omitempty"`
+	WorkspaceID    string    `json:"workspace_id,omitempty"`
+	Workspace      string    `json:"workspace,omitempty"`
+	IssueID        string    `json:"issue_id,omitempty"`
+	Issue          string    `json:"issue,omitempty"`
+	ActorID        string    `json:"actor_id,omitempty"`
+	Actor          string    `json:"actor,omitempty"`
 }
 
 // CreateCommentRequest represents a request to create a comment
