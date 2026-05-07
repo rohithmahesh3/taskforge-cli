@@ -2,6 +2,7 @@ package issue
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
@@ -9,6 +10,7 @@ import (
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/rohithmahesh3/taskforge-cli/pkg/taskforge"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var (
@@ -22,6 +24,7 @@ var (
 	issueState       string
 	issueAssignees   []string
 	issueLabels      []string
+	deleteYes        bool
 )
 
 var IssueCmd = &cobra.Command{
@@ -115,6 +118,9 @@ func init() {
 	editCmd.Flags().StringVar(&issueState, "state", "", "New state ID")
 	editCmd.Flags().StringSliceVarP(&issueAssignees, "assignee", "a", nil, "New assignee ID(s)")
 	editCmd.Flags().StringSliceVar(&issueLabels, "label", nil, "New label ID(s)")
+
+	// Delete flags
+	deleteCmd.Flags().BoolVarP(&deleteYes, "yes", "y", false, "Skip interactive confirmation")
 }
 
 func runList(cmd *cobra.Command, args []string) error {
@@ -359,19 +365,22 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete issue %s?", issueRef),
-		Default: false,
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
+	confirm := deleteYes
 	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
+		if !term.IsTerminal(int(os.Stdin.Fd())) {
+			return fmt.Errorf("interactive confirmation required in non-tty mode; rerun with --yes")
+		}
+		prompt := &survey.Confirm{
+			Message: fmt.Sprintf("Are you sure you want to delete issue %s?", issueRef),
+			Default: false,
+		}
+		if err := survey.AskOne(prompt, &confirm); err != nil {
+			return err
+		}
+		if !confirm {
+			output.Info("Deletion cancelled")
+			return nil
+		}
 	}
 
 	if err := client.DeleteIssue(projectID, issueID); err != nil {

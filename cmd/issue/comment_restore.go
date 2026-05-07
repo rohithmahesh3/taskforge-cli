@@ -2,16 +2,19 @@ package issue
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
 	"github.com/rohithmahesh3/taskforge-cli/internal/output"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var (
 	commentRestoreVersionNum int
+	commentRestoreYes        bool
 )
 
 func newCommentRestoreCmd() *cobra.Command {
@@ -30,6 +33,7 @@ Examples:
 	}
 
 	commentRestoreCmd.Flags().IntVar(&commentRestoreVersionNum, "version-num", 0, "Version number to restore (default: latest)")
+	commentRestoreCmd.Flags().BoolVarP(&commentRestoreYes, "yes", "y", false, "Skip interactive confirmation")
 
 	return commentRestoreCmd
 }
@@ -48,24 +52,31 @@ func runCommentRestore(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	projectID, issueID, err := resolveIssueContext(client, projectID, issueRef)
-	if err != nil {
-		return err
+	issueID := issueRef
+	if !looksLikeUUID(issueRef) {
+		var resolveErr error
+		projectID, issueID, resolveErr = resolveIssueContext(client, projectID, issueRef)
+		if resolveErr != nil {
+			return resolveErr
+		}
 	}
 
-	// Confirm restoration
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to restore comment %s?", commentID),
-		Default: false,
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
-
+	confirm := commentRestoreYes
 	if !confirm {
-		output.Info("Restore cancelled")
-		return nil
+		if !term.IsTerminal(int(os.Stdin.Fd())) {
+			return fmt.Errorf("interactive confirmation required in non-tty mode; rerun with --yes")
+		}
+		prompt := &survey.Confirm{
+			Message: fmt.Sprintf("Are you sure you want to restore comment %s?", commentID),
+			Default: false,
+		}
+		if err := survey.AskOne(prompt, &confirm); err != nil {
+			return err
+		}
+		if !confirm {
+			output.Info("Restore cancelled")
+			return nil
+		}
 	}
 
 	comment, err := client.RestoreComment(projectID, issueID, commentID, commentRestoreVersionNum)

@@ -222,8 +222,8 @@ type UpdateIssueRequest struct {
 	Description   string   `json:"description,omitempty"`
 	State         string   `json:"state,omitempty"`
 	Priority      string   `json:"priority,omitempty"`
-	Assignees     []string `json:"assignees,omitempty"`
-	Labels        []string `json:"labels,omitempty"`
+	Assignees     []string `json:"assignees_list,omitempty"`
+	Labels        []string `json:"labels_list,omitempty"`
 	Parent        string   `json:"parent,omitempty"`
 	EstimatePoint int      `json:"estimate_point,omitempty"`
 	Type          string   `json:"type,omitempty"`
@@ -411,4 +411,12 @@ type VersionHistory struct {
 // RestoreRequest represents a request to restore a deleted entity
 type RestoreRequest struct {
 	VersionNum int `json:"version_num"`
+}
+
+type IssueRestoreRequest struct {
+	Version int `json:"version"`
+}
+
+type CommentRestoreRequest struct {
+	VersionNumber int `json:"version_number"`
 }

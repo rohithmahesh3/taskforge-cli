@@ -236,7 +236,7 @@ func (c *Client) GetIssueVersionDiff(projectID, issueID, field string, versionNu
 func (c *Client) RestoreIssue(projectID, issueID string, versionNum int) (*taskforge.Issue, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/restore/", c.Workspace, projectID, issueID)
 
-	req := taskforge.RestoreRequest{VersionNum: versionNum}
+	req := taskforge.IssueRestoreRequest{Version: versionNum}
 
 	var issue taskforge.Issue
 	if err := c.Post(path, req, &issue); err != nil {
@@ -291,7 +291,7 @@ func (c *Client) GetCommentVersionDiff(projectID, issueID, commentID string, ver
 func (c *Client) RestoreComment(projectID, issueID, commentID string, versionNum int) (*taskforge.Comment, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/comments/%s/restore/", c.Workspace, projectID, issueID, commentID)
 
-	req := taskforge.RestoreRequest{VersionNum: versionNum}
+	req := taskforge.CommentRestoreRequest{VersionNumber: versionNum}
 
 	var comment taskforge.Comment
 	if err := c.Post(path, req, &comment); err != nil {
