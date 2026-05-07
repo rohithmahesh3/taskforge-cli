@@ -54,6 +54,8 @@ func init() {
 	commentCmd.AddCommand(commentListCmd)
 	commentCmd.AddCommand(commentAddCmd)
 	commentCmd.AddCommand(commentDeleteCmd)
+	commentCmd.AddCommand(newCommentVersionCmd())
+	commentCmd.AddCommand(newCommentRestoreCmd())
 
 	IssueCmd.AddCommand(commentCmd)
 }

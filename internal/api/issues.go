@@ -136,3 +136,127 @@ func (c *Client) SearchIssues(query string) ([]taskforge.Issue, error) {
 
 	return response.Issues, nil
 }
+
+// PatchIssue applies RFC 6902-style JSON Patch operations to an issue
+func (c *Client) PatchIssue(projectID, issueID string, patches []taskforge.PatchOp) (*taskforge.Issue, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/", c.Workspace, projectID, issueID)
+
+	req := taskforge.PatchRequest{Patches: patches}
+
+	var issue taskforge.Issue
+	if err := c.Patch(path, req, &issue); err != nil {
+		return nil, err
+	}
+
+	return &issue, nil
+}
+
+// ListIssueVersions retrieves the version history for an issue
+func (c *Client) ListIssueVersions(projectID, issueID string) ([]taskforge.VersionHistory, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/versions/", c.Workspace, projectID, issueID)
+
+	var response Response
+	if err := c.Get(path, nil, &response); err != nil {
+		return nil, err
+	}
+
+	var versions []taskforge.VersionHistory
+	if err := json.Unmarshal(response.Results, &versions); err != nil {
+		return nil, err
+	}
+
+	return versions, nil
+}
+
+// GetIssueVersion retrieves a specific version of an issue
+func (c *Client) GetIssueVersion(projectID, issueID, field string, versionNum int) (*taskforge.VersionHistory, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/versions/%d/?field=%s", c.Workspace, projectID, issueID, versionNum, field)
+
+	var version taskforge.VersionHistory
+	if err := c.Get(path, nil, &version); err != nil {
+		return nil, err
+	}
+
+	return &version, nil
+}
+
+// GetIssueVersionDiff retrieves the diff for a specific version of an issue
+func (c *Client) GetIssueVersionDiff(projectID, issueID, field string, versionNum int) (string, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/versions/%d/diff/?field=%s", c.Workspace, projectID, issueID, versionNum, field)
+
+	body, err := c.GetRaw(path, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(body), nil
+}
+
+// RestoreIssue restores a deleted issue to a specific version
+func (c *Client) RestoreIssue(projectID, issueID string, versionNum int) (*taskforge.Issue, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/restore/", c.Workspace, projectID, issueID)
+
+	req := taskforge.RestoreRequest{VersionNum: versionNum}
+
+	var issue taskforge.Issue
+	if err := c.Post(path, req, &issue); err != nil {
+		return nil, err
+	}
+
+	return &issue, nil
+}
+
+// ListCommentVersions retrieves the version history for a comment
+func (c *Client) ListCommentVersions(projectID, issueID, commentID string) ([]taskforge.VersionHistory, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/comments/%s/versions/", c.Workspace, projectID, issueID, commentID)
+
+	var response Response
+	if err := c.Get(path, nil, &response); err != nil {
+		return nil, err
+	}
+
+	var versions []taskforge.VersionHistory
+	if err := json.Unmarshal(response.Results, &versions); err != nil {
+		return nil, err
+	}
+
+	return versions, nil
+}
+
+// GetCommentVersion retrieves a specific version of a comment
+func (c *Client) GetCommentVersion(projectID, issueID, commentID string, versionNum int) (*taskforge.VersionHistory, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/comments/%s/versions/%d/", c.Workspace, projectID, issueID, commentID, versionNum)
+
+	var version taskforge.VersionHistory
+	if err := c.Get(path, nil, &version); err != nil {
+		return nil, err
+	}
+
+	return &version, nil
+}
+
+// GetCommentVersionDiff retrieves the diff for a specific version of a comment
+func (c *Client) GetCommentVersionDiff(projectID, issueID, commentID string, versionNum int) (string, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/comments/%s/versions/%d/diff/", c.Workspace, projectID, issueID, commentID, versionNum)
+
+	body, err := c.GetRaw(path, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(body), nil
+}
+
+// RestoreComment restores a deleted comment to a specific version
+func (c *Client) RestoreComment(projectID, issueID, commentID string, versionNum int) (*taskforge.Comment, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/comments/%s/restore/", c.Workspace, projectID, issueID, commentID)
+
+	req := taskforge.RestoreRequest{VersionNum: versionNum}
+
+	var comment taskforge.Comment
+	if err := c.Post(path, req, &comment); err != nil {
+		return nil, err
+	}
+
+	return &comment, nil
+}

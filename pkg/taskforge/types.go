@@ -1,6 +1,9 @@
 package taskforge
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Workspace struct {
 	ID          string    `json:"id"`
@@ -366,4 +369,39 @@ type UpdateAttachmentRequest struct {
 	Size             int64                  `json:"size,omitempty"`
 	IsUploaded       bool                   `json:"is_uploaded,omitempty"`
 	StorageMetadata  map[string]interface{} `json:"storage_metadata,omitempty"`
+}
+
+// PatchOp represents a single RFC 6902-style JSON Patch operation
+type PatchOp struct {
+	Op     string `json:"op"`               // replace, diff, insert, delete
+	Field  string `json:"field"`             // e.g. "description"
+	Old    string `json:"old,omitempty"`     // current value for replace op (conflict detection)
+	Value  string `json:"value,omitempty"`   // for replace, insert
+	Diff   string `json:"diff,omitempty"`    // for diff op
+	After  string `json:"after,omitempty"`   // for insert op
+	Before string `json:"before,omitempty"`  // for delete op
+}
+
+// PatchRequest represents a patch request body containing a list of operations
+type PatchRequest struct {
+	Patches []PatchOp `json:"patches"`
+}
+
+// VersionHistory represents a version history entry for an issue or comment
+type VersionHistory struct {
+	ID          string          `json:"id"`
+	VersionNum  int             `json:"version_num"`
+	EntityType  string          `json:"entity_type"`
+	EntityID    string          `json:"entity_id"`
+	Field       string          `json:"field"`
+	Content     string          `json:"content"`
+	PatchOps    json.RawMessage `json:"patch_ops"`
+	CreatedAt    string          `json:"created_at"`
+	CreatedByID  string          `json:"created_by_id"`
+	CreatedBy    FlexibleUser    `json:"created_by"`
+}
+
+// RestoreRequest represents a request to restore a deleted entity
+type RestoreRequest struct {
+	VersionNum int `json:"version_num"`
 }
