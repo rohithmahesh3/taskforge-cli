@@ -14,6 +14,7 @@ import (
 	"github.com/rohithmahesh3/taskforge-cli/cmd/issue"
 	"github.com/rohithmahesh3/taskforge-cli/cmd/label"
 	"github.com/rohithmahesh3/taskforge-cli/cmd/module"
+	"github.com/rohithmahesh3/taskforge-cli/cmd/page"
 	"github.com/rohithmahesh3/taskforge-cli/cmd/project"
 	"github.com/rohithmahesh3/taskforge-cli/cmd/state"
 	issuetype "github.com/rohithmahesh3/taskforge-cli/cmd/type"
@@ -98,6 +99,7 @@ func init() {
 	rootCmd.AddCommand(issue.IssueCmd)
 	rootCmd.AddCommand(state.StateCmd)
 	rootCmd.AddCommand(label.LabelCmd)
+	rootCmd.AddCommand(page.PageCmd)
 	rootCmd.AddCommand(cycle.CycleCmd)
 	rootCmd.AddCommand(module.ModuleCmd)
 	rootCmd.AddCommand(intake.IntakeCmd)

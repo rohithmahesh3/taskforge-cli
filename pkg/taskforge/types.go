@@ -440,3 +440,56 @@ type IssueRestoreRequest struct {
 type CommentRestoreRequest struct {
 	Version int `json:"version"`
 }
+
+// ── Pages ──
+
+type PageCategory struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description,omitempty"`
+	SortOrder   float64   `json:"sort_order,omitempty"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+}
+
+type CreatePageCategoryRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	SortOrder   int    `json:"sort_order,omitempty"`
+}
+
+type UpdatePageCategoryRequest struct {
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	SortOrder   int    `json:"sort_order,omitempty"`
+}
+
+type Page struct {
+	ID          string    `json:"id"`
+	Title       string    `json:"title"`
+	Slug        string    `json:"slug"`
+	Content     string    `json:"content,omitempty"`
+	CategoryID  string    `json:"category_id,omitempty"`
+	SortOrder   float64   `json:"sort_order,omitempty"`
+	Published   bool      `json:"published,omitempty"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+}
+
+type CreatePageRequest struct {
+	Title      string `json:"title"`
+	Content    string `json:"content,omitempty"`
+	Slug       string `json:"slug"`
+	CategoryID string `json:"category_id"`
+	SortOrder  int    `json:"sort_order,omitempty"`
+	Published  bool   `json:"published,omitempty"`
+}
+
+type UpdatePageRequest struct {
+	Title      string `json:"title,omitempty"`
+	Content    string `json:"content,omitempty"`
+	Slug       string `json:"slug,omitempty"`
+	CategoryID string `json:"category_id,omitempty"`
+	SortOrder  int    `json:"sort_order,omitempty"`
+	Published  *bool  `json:"published,omitempty"`
+}
