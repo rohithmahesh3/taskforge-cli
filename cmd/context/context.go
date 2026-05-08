@@ -80,7 +80,7 @@ taskforge issue patch <issue-id:seq_id|uuid> --op <replace|diff|insert|delete> -
 taskforge issue version list <issue-id:seq_id|uuid>
 taskforge issue version get <issue-id:seq_id|uuid> <version-num:int> --field <name|description>
 taskforge issue version diff <issue-id:seq_id|uuid> <version-num:int> --field <name|description>
-taskforge issue restore <issue-id:seq_id|uuid> [--version-num <int>]
+taskforge issue restore <issue-id:seq_id|uuid> --version-num <int>
 
 # Issue Comments
 taskforge issue comment list <issue-id:seq_id|uuid>
@@ -90,7 +90,7 @@ taskforge issue comment delete <issue-id:seq_id|uuid> <comment-id:uuid>
 taskforge issue comment version list <issue-id:seq_id|uuid> <comment-id:uuid>
 taskforge issue comment version get <issue-id:seq_id|uuid> <comment-id:uuid> <version-num:int>
 taskforge issue comment version diff <issue-id:seq_id|uuid> <comment-id:uuid> <version-num:int>
-taskforge issue comment restore <issue-id:seq_id|uuid> <comment-id:uuid> [--version-num <int>]
+taskforge issue comment restore <issue-id:seq_id|uuid> <comment-id:uuid> --version-num <int>
 
 # Issue Links
 taskforge issue link list <issue-id:seq_id|uuid>

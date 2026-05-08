@@ -237,9 +237,7 @@ func (c *Client) RestoreIssue(projectID, issueID string, versionNum int) (*taskf
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/restore/", c.Workspace, projectID, issueID)
 
 	var req taskforge.IssueRestoreRequest
-	if versionNum > 0 {
-		req.Version = &versionNum
-	}
+	req.Version = versionNum
 
 	var issue taskforge.Issue
 	if err := c.Post(path, req, &issue); err != nil {
@@ -295,9 +293,7 @@ func (c *Client) RestoreComment(projectID, issueID, commentID string, versionNum
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/work-items/%s/comments/%s/restore/", c.Workspace, projectID, issueID, commentID)
 
 	var req taskforge.CommentRestoreRequest
-	if versionNum > 0 {
-		req.Version = &versionNum
-	}
+	req.Version = versionNum
 
 	var comment taskforge.Comment
 	if err := c.Post(path, req, &comment); err != nil {

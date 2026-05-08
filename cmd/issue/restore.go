@@ -20,22 +20,28 @@ func init() {
 		Short: "Restore a deleted issue",
 		Long: `Restore a previously deleted issue from its version history.
 
-If --version-num is not specified, the latest version will be restored.
+You must specify the version number to restore to with --version-num.
 
 Examples:
-  taskforge issue restore TF-1
   taskforge issue restore TF-1 --version-num 3`,
 		Args: cobra.ExactArgs(1),
 		RunE: runRestore,
 	}
 
-	restoreCmd.Flags().IntVar(&restoreVersionNum, "version-num", 0, "Version number to restore (default: latest)")
+	restoreCmd.Flags().IntVar(&restoreVersionNum, "version-num", 0, "Version number to restore")
 	restoreCmd.Flags().BoolVarP(&restoreYes, "yes", "y", false, "Skip interactive confirmation")
 
 	IssueCmd.AddCommand(restoreCmd)
 }
 
 func runRestore(cmd *cobra.Command, args []string) error {
+	if !cmd.Flags().Changed("version-num") {
+		return fmt.Errorf("--version-num is required")
+	}
+	if restoreVersionNum < 1 {
+		return fmt.Errorf("--version-num must be a positive integer (got %d)", restoreVersionNum)
+	}
+
 	projectID := config.Cfg.DefaultProject
 	if projectID == "" {
 		return fmt.Errorf("no project specified")
@@ -69,11 +75,7 @@ func runRestore(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to restore issue: %w", err)
 	}
 
-	if restoreVersionNum > 0 {
-		output.Success(fmt.Sprintf("Restored issue %d to version %d", issue.SequenceID, restoreVersionNum))
-	} else {
-		output.Success(fmt.Sprintf("Restored issue %d", issue.SequenceID))
-	}
+	output.Success(fmt.Sprintf("Restored issue %d to version %d", issue.SequenceID, restoreVersionNum))
 
 	return nil
 }

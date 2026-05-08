@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_RestoreIssuePayloadUsesVersion(t *testing.T) {
+func TestClient_RestoreIssuePayloadSendsVersionWhenProvided(t *testing.T) {
 	var body map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "POST", r.Method)
@@ -32,7 +32,7 @@ func TestClient_RestoreIssuePayloadUsesVersion(t *testing.T) {
 	assert.False(t, hasLegacy)
 }
 
-func TestClient_RestoreCommentPayloadUsesVersion(t *testing.T) {
+func TestClient_RestoreCommentPayloadSendsVersionWhenProvided(t *testing.T) {
 	var body map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "POST", r.Method)
@@ -52,7 +52,7 @@ func TestClient_RestoreCommentPayloadUsesVersion(t *testing.T) {
 	assert.False(t, hasLegacy)
 }
 
-func TestClient_RestoreIssuePayloadOmitsVersionWhenDefault(t *testing.T) {
+func TestClient_RestoreIssuePayloadAlwaysSendsVersion(t *testing.T) {
 	var body map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "POST", r.Method)
@@ -67,11 +67,10 @@ func TestClient_RestoreIssuePayloadOmitsVersionWhenDefault(t *testing.T) {
 	client := &Client{HTTPClient: &http.Client{Timeout: DefaultTimeout}, BaseURL: server.URL, APIKey: "k", Workspace: "ws"}
 	_, err := client.RestoreIssue("p-1", "i-1", 0)
 	require.NoError(t, err)
-	_, hasVersion := body["version"]
-	assert.False(t, hasVersion)
+	assert.EqualValues(t, 0, body["version"])
 }
 
-func TestClient_RestoreCommentPayloadOmitsVersionWhenDefault(t *testing.T) {
+func TestClient_RestoreCommentPayloadAlwaysSendsVersion(t *testing.T) {
 	var body map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "POST", r.Method)
@@ -86,8 +85,7 @@ func TestClient_RestoreCommentPayloadOmitsVersionWhenDefault(t *testing.T) {
 	client := &Client{HTTPClient: &http.Client{Timeout: DefaultTimeout}, BaseURL: server.URL, APIKey: "k", Workspace: "ws"}
 	_, err := client.RestoreComment("p-1", "i-1", "c-1", 0)
 	require.NoError(t, err)
-	_, hasVersion := body["version"]
-	assert.False(t, hasVersion)
+	assert.EqualValues(t, 0, body["version"])
 }
 
 func TestClient_UpdateIssuePayloadUsesListKeys(t *testing.T) {

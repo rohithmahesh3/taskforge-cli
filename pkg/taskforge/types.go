@@ -434,9 +434,9 @@ type RestoreRequest struct {
 }
 
 type IssueRestoreRequest struct {
-	Version *int `json:"version,omitempty"`
+	Version int `json:"version"`
 }
 
 type CommentRestoreRequest struct {
-	Version *int `json:"version,omitempty"`
+	Version int `json:"version"`
 }

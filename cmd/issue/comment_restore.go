@@ -20,22 +20,28 @@ func newCommentRestoreCmd() *cobra.Command {
 		Short: "Restore a deleted comment",
 		Long: `Restore a previously deleted comment from its version history.
 
-If --version-num is not specified, the latest version will be restored.
+You must specify the version number to restore to with --version-num.
 
 Examples:
-  taskforge issue comment restore TF-1 comment-uuid
   taskforge issue comment restore TF-1 comment-uuid --version-num 2`,
 		Args: cobra.ExactArgs(2),
 		RunE: runCommentRestore,
 	}
 
-	commentRestoreCmd.Flags().IntVar(&commentRestoreVersionNum, "version-num", 0, "Version number to restore (default: latest)")
+	commentRestoreCmd.Flags().IntVar(&commentRestoreVersionNum, "version-num", 0, "Version number to restore")
 	commentRestoreCmd.Flags().BoolVarP(&commentRestoreYes, "yes", "y", false, "Skip interactive confirmation")
 
 	return commentRestoreCmd
 }
 
 func runCommentRestore(cmd *cobra.Command, args []string) error {
+	if !cmd.Flags().Changed("version-num") {
+		return fmt.Errorf("--version-num is required")
+	}
+	if commentRestoreVersionNum < 1 {
+		return fmt.Errorf("--version-num must be a positive integer (got %d)", commentRestoreVersionNum)
+	}
+
 	projectID := config.Cfg.DefaultProject
 	if projectID == "" {
 		return fmt.Errorf("no project specified")
@@ -68,11 +74,7 @@ func runCommentRestore(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to restore comment: %w", err)
 	}
 
-	if commentRestoreVersionNum > 0 {
-		output.Success(fmt.Sprintf("Restored comment %s to version %d", comment.ID, commentRestoreVersionNum))
-	} else {
-		output.Success(fmt.Sprintf("Restored comment %s", comment.ID))
-	}
+	output.Success(fmt.Sprintf("Restored comment %s to version %d", comment.ID, commentRestoreVersionNum))
 
 	return nil
 }
