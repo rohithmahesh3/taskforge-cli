@@ -125,3 +125,70 @@ func (c *Client) DeletePage(projectID, pageID string) error {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/pages/%s/", c.Workspace, projectID, pageID)
 	return c.Delete(path)
 }
+
+// GetPageVersions retrieves version history for a page.
+func (c *Client) GetPageVersions(projectID, pageID, field string) ([]taskforge.ContentVersion, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/pages/%s/versions/", c.Workspace, projectID, pageID)
+
+	query := url.Values{}
+	if field != "" {
+		query.Set("field", field)
+	}
+
+	var response struct {
+		Results []taskforge.ContentVersion `json:"results"`
+	}
+
+	var q url.Values
+	if len(query) > 0 {
+		q = query
+	}
+
+	if err := c.Get(path, q, &response); err != nil {
+		return nil, err
+	}
+
+	return response.Results, nil
+}
+
+// GetPageVersion retrieves a specific version of a page field.
+func (c *Client) GetPageVersion(projectID, pageID, versionNum, field string) (*taskforge.ContentVersion, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/pages/%s/versions/%s/", c.Workspace, projectID, pageID, versionNum)
+
+	query := url.Values{}
+	query.Set("field", field)
+
+	var version taskforge.ContentVersion
+	if err := c.Get(path, query, &version); err != nil {
+		return nil, err
+	}
+
+	return &version, nil
+}
+
+// GetPageVersionDiff retrieves the diff for a specific page version.
+func (c *Client) GetPageVersionDiff(projectID, pageID, versionNum, field string) (*taskforge.VersionDiff, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/pages/%s/versions/%s/diff/", c.Workspace, projectID, pageID, versionNum)
+
+	query := url.Values{}
+	query.Set("field", field)
+
+	var diff taskforge.VersionDiff
+	if err := c.Get(path, query, &diff); err != nil {
+		return nil, err
+	}
+
+	return &diff, nil
+}
+
+// RestorePage restores a page to a specific version.
+func (c *Client) RestorePage(projectID, pageID string, req taskforge.RestorePageRequest) (*taskforge.Page, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/pages/%s/restore/", c.Workspace, projectID, pageID)
+
+	var page taskforge.Page
+	if err := c.Post(path, req, &page); err != nil {
+		return nil, err
+	}
+
+	return &page, nil
+}

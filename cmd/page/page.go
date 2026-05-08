@@ -20,6 +20,10 @@ var (
 	pageSearchQuery string
 	pageDeleteYes   bool
 
+	pageField       string
+	pageVersionNum  int
+	pageRestoreYes  bool
+
 	catName        string
 	catDescription string
 	catSortOrder   int
@@ -86,6 +90,61 @@ var pageDeleteCmd = &cobra.Command{
 
 // ── Page Category subcommands ──
 
+var pageVersionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Page version operations",
+	Long:  `View version history, specific versions, and diffs for page fields.`,
+}
+
+var pageVersionListCmd = &cobra.Command{
+	Use:     "list <page-id>",
+	Aliases: []string{"ls"},
+	Short:   "List page version history",
+	Long: `List version history for a page.
+
+Examples:
+  taskforge page version list <page-id>
+  taskforge page version list <page-id> --field content`,
+	Args: cobra.ExactArgs(1),
+	RunE: runPageVersionList,
+}
+
+var pageVersionGetCmd = &cobra.Command{
+	Use:   "get <page-id> <version-num>",
+	Short: "Get a specific version of a page field",
+	Long: `View a specific version of a page field.
+
+Examples:
+  taskforge page version get <page-id> <version-num> --field content`,
+	Args: cobra.ExactArgs(2),
+	RunE: runPageVersionGet,
+}
+
+var pageVersionDiffCmd = &cobra.Command{
+	Use:   "diff <page-id> <version-num>",
+	Short: "Get diff for a specific page version",
+	Long: `View the diff for a specific version of a page field.
+
+Examples:
+  taskforge page version diff <page-id> <version-num> --field content`,
+	Args: cobra.ExactArgs(2),
+	RunE: runPageVersionDiff,
+}
+
+var pageRestoreCmd = &cobra.Command{
+	Use:   "restore <page-id>",
+	Short: "Restore a page to a specific version",
+	Long: `Restore a page to a specific version. Version number is required.
+
+Examples:
+  taskforge page restore <page-id> --version-num 2
+  taskforge page restore <page-id> --version-num 1 --field content`,
+	Args: cobra.ExactArgs(1),
+	RunE: runPageRestore,
+}
+
+// ── Page Category subcommands ──
+
 var pageCategoryCmd = &cobra.Command{
 	Use:     "category",
 	Aliases: []string{"cat", "categories"},
@@ -137,6 +196,8 @@ func init() {
 	PageCmd.AddCommand(pageEditCmd)
 	PageCmd.AddCommand(pageDeleteCmd)
 	PageCmd.AddCommand(pageCategoryCmd)
+	PageCmd.AddCommand(pageVersionCmd)
+	PageCmd.AddCommand(pageRestoreCmd)
 
 	// List flags
 	pageListCmd.Flags().StringVarP(&pageSearchQuery, "search", "s", "", "Search pages by keyword")
@@ -184,6 +245,28 @@ func init() {
 
 	// Category delete flags
 	catDeleteCmd.Flags().BoolVarP(&catDeleteYes, "yes", "y", false, "Skip confirmation")
+
+	// --- Version subcommand group ---
+	pageVersionCmd.AddCommand(pageVersionListCmd)
+	pageVersionCmd.AddCommand(pageVersionGetCmd)
+	pageVersionCmd.AddCommand(pageVersionDiffCmd)
+
+	// Version list flags
+	pageVersionListCmd.Flags().StringVarP(&pageField, "field", "f", "", "Field to get versions for (content or title)")
+
+	// Version get flags
+	pageVersionGetCmd.Flags().StringVarP(&pageField, "field", "f", "", "Field to get version for (required)")
+	_ = pageVersionGetCmd.MarkFlagRequired("field")
+
+	// Version diff flags
+	pageVersionDiffCmd.Flags().StringVarP(&pageField, "field", "f", "", "Field to get diff for (required)")
+	_ = pageVersionDiffCmd.MarkFlagRequired("field")
+
+	// Restore flags
+	pageRestoreCmd.Flags().IntVar(&pageVersionNum, "version-num", 0, "Version number to restore to (required)")
+	pageRestoreCmd.Flags().StringVarP(&pageField, "field", "f", "", "Specific field to restore (default: all versionable fields)")
+	pageRestoreCmd.Flags().BoolVarP(&pageRestoreYes, "yes", "y", false, "Skip confirmation")
+	_ = pageRestoreCmd.MarkFlagRequired("version-num")
 }
 
 // ── Page run functions ──
@@ -508,5 +591,143 @@ func runCategoryDelete(cmd *cobra.Command, args []string) error {
 	}
 
 	output.Success(fmt.Sprintf("Deleted page category %s", categoryID))
+	return nil
+}
+
+// ── Page Version run functions ──
+
+func runPageVersionList(cmd *cobra.Command, args []string) error {
+	projectID := config.Cfg.DefaultProject
+	if projectID == "" {
+		return fmt.Errorf("no project specified")
+	}
+
+	pageID := args[0]
+
+	client, err := api.NewClient()
+	if err != nil {
+		return err
+	}
+
+	versions, err := client.GetPageVersions(projectID, pageID, pageField)
+	if err != nil {
+		return err
+	}
+
+	if len(versions) == 0 {
+		output.Info("No versions found")
+		return nil
+	}
+
+	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
+
+	type versionOutput struct {
+		Version   int    `table:"VER" json:"version"`
+		Field     string `table:"FIELD" json:"field"`
+		Content   string `table:"CONTENT" json:"content,omitempty"`
+		ActorType string `table:"ACTOR" json:"actor_type,omitempty"`
+	}
+
+	var outputs []versionOutput
+	for _, v := range versions {
+		content := v.Content
+		if len(content) > 80 {
+			content = content[:80] + "..."
+		}
+		outputs = append(outputs, versionOutput{
+			Version:   v.Version,
+			Field:     v.Field,
+			Content:   content,
+			ActorType: v.ActorType,
+		})
+	}
+
+	return formatter.Print(outputs)
+}
+
+func runPageVersionGet(cmd *cobra.Command, args []string) error {
+	projectID := config.Cfg.DefaultProject
+	if projectID == "" {
+		return fmt.Errorf("no project specified")
+	}
+
+	pageID := args[0]
+	versionNum := args[1]
+
+	client, err := api.NewClient()
+	if err != nil {
+		return err
+	}
+
+	version, err := client.GetPageVersion(projectID, pageID, versionNum, pageField)
+	if err != nil {
+		return err
+	}
+
+	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
+	return formatter.Print(version)
+}
+
+func runPageVersionDiff(cmd *cobra.Command, args []string) error {
+	projectID := config.Cfg.DefaultProject
+	if projectID == "" {
+		return fmt.Errorf("no project specified")
+	}
+
+	pageID := args[0]
+	versionNum := args[1]
+
+	client, err := api.NewClient()
+	if err != nil {
+		return err
+	}
+
+	diff, err := client.GetPageVersionDiff(projectID, pageID, versionNum, pageField)
+	if err != nil {
+		return err
+	}
+
+	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
+	return formatter.Print(diff)
+}
+
+func runPageRestore(cmd *cobra.Command, args []string) error {
+	projectID := config.Cfg.DefaultProject
+	if projectID == "" {
+		return fmt.Errorf("no project specified")
+	}
+
+	pageID := args[0]
+
+	if !cmd.Flags().Changed("version-num") {
+		return fmt.Errorf("--version-num is required")
+	}
+	if pageVersionNum < 1 {
+		return fmt.Errorf("must be a positive integer (got %d)", pageVersionNum)
+	}
+
+	if !pageRestoreYes {
+		output.Info(fmt.Sprintf("Will restore page %s to version %d. Use --yes to confirm.", pageID, pageVersionNum))
+		return nil
+	}
+
+	client, err := api.NewClient()
+	if err != nil {
+		return err
+	}
+
+	req := taskforge.RestorePageRequest{
+		Version: pageVersionNum,
+	}
+	if pageField != "" {
+		req.Field = pageField
+	}
+
+	page, err := client.RestorePage(projectID, pageID, req)
+	if err != nil {
+		return err
+	}
+
+	output.Success(fmt.Sprintf("Restored page '%s' to version %d", page.Title, pageVersionNum))
 	return nil
 }

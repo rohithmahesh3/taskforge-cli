@@ -320,3 +320,141 @@ func TestDeletePage(t *testing.T) {
 		t.Fatalf("DeletePage failed: %v", err)
 	}
 }
+
+func TestListPageVersions(t *testing.T) {
+	mockVersions := []taskforge.ContentVersion{
+		{Version: 1, Field: "content", Content: "original", ActorType: "agent"},
+		{Version: 2, Field: "title", Content: "updated", ActorType: "agent"},
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("Expected GET request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/workspaces/test-workspace/projects/test-project/pages/pg-123/versions/" {
+			t.Errorf("Unexpected path: %s", r.URL.Path)
+		}
+		json.NewEncoder(w).Encode(map[string]interface{}{"results": mockVersions})
+	}))
+	defer server.Close()
+
+	client := &Client{
+		HTTPClient: server.Client(),
+		BaseURL:    server.URL,
+		APIKey:     "test-key",
+		Workspace:  "test-workspace",
+	}
+
+	versions, err := client.GetPageVersions("test-project", "pg-123", "")
+	if err != nil {
+		t.Fatalf("GetPageVersions failed: %v", err)
+	}
+	if len(versions) != 2 {
+		t.Errorf("Expected 2 versions, got %d", len(versions))
+	}
+}
+
+func TestGetPageVersion(t *testing.T) {
+	mockVersion := taskforge.ContentVersion{
+		Version: 1, Field: "content", Content: "original", ActorType: "agent",
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("Expected GET request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/workspaces/test-workspace/projects/test-project/pages/pg-123/versions/1/" {
+			t.Errorf("Unexpected path: %s", r.URL.Path)
+		}
+		json.NewEncoder(w).Encode(mockVersion)
+	}))
+	defer server.Close()
+
+	client := &Client{
+		HTTPClient: server.Client(),
+		BaseURL:    server.URL,
+		APIKey:     "test-key",
+		Workspace:  "test-workspace",
+	}
+
+	version, err := client.GetPageVersion("test-project", "pg-123", "1", "content")
+	if err != nil {
+		t.Fatalf("GetPageVersion failed: %v", err)
+	}
+	if version.Version != 1 {
+		t.Errorf("Expected version 1, got %d", version.Version)
+	}
+}
+
+func TestGetPageVersionDiff(t *testing.T) {
+	mockDiff := map[string]interface{}{
+		"field":           "content",
+		"version":         2,
+		"previous_content": "old",
+		"current_content": "new",
+		"diff":             "--- a\n+++ b\n",
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("Expected GET request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/workspaces/test-workspace/projects/test-project/pages/pg-123/versions/2/diff/" {
+			t.Errorf("Unexpected path: %s", r.URL.Path)
+		}
+		json.NewEncoder(w).Encode(mockDiff)
+	}))
+	defer server.Close()
+
+	client := &Client{
+		HTTPClient: server.Client(),
+		BaseURL:    server.URL,
+		APIKey:     "test-key",
+		Workspace:  "test-workspace",
+	}
+
+	diff, err := client.GetPageVersionDiff("test-project", "pg-123", "2", "content")
+	if err != nil {
+		t.Fatalf("GetPageVersionDiff failed: %v", err)
+	}
+	if diff.Field != "content" {
+		t.Errorf("Unexpected diff response: %v", diff)
+	}
+}
+
+func TestRestorePage(t *testing.T) {
+	mockPage := taskforge.Page{
+		ID: "pg-123", Title: "Restored Page", Slug: "restored",
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("Expected POST request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/workspaces/test-workspace/projects/test-project/pages/pg-123/restore/" {
+			t.Errorf("Unexpected path: %s", r.URL.Path)
+		}
+		var body map[string]interface{}
+		json.NewDecoder(r.Body).Decode(&body)
+		if body["version"] != float64(1) {
+			t.Errorf("Expected version 1, got %v", body["version"])
+		}
+		json.NewEncoder(w).Encode(mockPage)
+	}))
+	defer server.Close()
+
+	client := &Client{
+		HTTPClient: server.Client(),
+		BaseURL:    server.URL,
+		APIKey:     "test-key",
+		Workspace:  "test-workspace",
+	}
+
+	page, err := client.RestorePage("test-project", "pg-123", taskforge.RestorePageRequest{Version: 1})
+	if err != nil {
+		t.Fatalf("RestorePage failed: %v", err)
+	}
+	if page.ID != "pg-123" {
+		t.Errorf("Unexpected page: %v", page)
+	}
+}

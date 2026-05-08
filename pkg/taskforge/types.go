@@ -493,3 +493,29 @@ type UpdatePageRequest struct {
 	SortOrder  int    `json:"sort_order,omitempty"`
 	Published  *bool  `json:"published,omitempty"`
 }
+
+// ContentVersion represents a version snapshot of a field value.
+type ContentVersion struct {
+	Version   int        `json:"version"`
+	Content   string     `json:"content,omitempty"`
+	Diff      string     `json:"diff,omitempty"`
+	Field     string     `json:"field,omitempty"`
+	ActorID   string     `json:"actor_id,omitempty"`
+	ActorType string     `json:"actor_type,omitempty"`
+	CreatedAt time.Time  `json:"created_at,omitempty"`
+}
+
+// VersionDiff represents a diff between two versions.
+type VersionDiff struct {
+	Version         int    `json:"version"`
+	Field           string `json:"field"`
+	Diff            string `json:"diff"`
+	PreviousContent string `json:"previous_content,omitempty"`
+	CurrentContent  string `json:"current_content,omitempty"`
+}
+
+// RestorePageRequest represents a request to restore a page to a specific version.
+type RestorePageRequest struct {
+	Version int    `json:"version"`
+	Field   string `json:"field,omitempty"`
+}
