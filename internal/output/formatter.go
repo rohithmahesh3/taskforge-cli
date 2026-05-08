@@ -1,6 +1,7 @@
 package output
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -47,17 +48,17 @@ func (f *Formatter) printYAML(data interface{}) error {
 }
 
 func Success(msg string) {
-	color.Green("✓ %s", msg)
+	_, _ = fmt.Fprintf(os.Stderr, "%s\n", color.GreenString("✓ %s", msg))
 }
 
 func Error(msg string) {
-	color.Red("✗ %s", msg)
+	_, _ = fmt.Fprintf(os.Stderr, "%s\n", color.RedString("✗ %s", msg))
 }
 
 func Warning(msg string) {
-	color.Yellow("⚠ %s", msg)
+	_, _ = fmt.Fprintf(os.Stderr, "%s\n", color.YellowString("⚠ %s", msg))
 }
 
 func Info(msg string) {
-	color.Cyan("ℹ %s", msg)
+	_, _ = fmt.Fprintf(os.Stderr, "%s\n", color.CyanString("ℹ %s", msg))
 }

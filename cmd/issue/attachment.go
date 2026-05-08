@@ -14,6 +14,7 @@ import (
 var (
 	attachmentName     string
 	attachmentArchived bool
+	attachmentDeleteYes bool
 )
 
 func init() {
@@ -60,6 +61,7 @@ func init() {
 	attachmentEditCmd.Flags().StringVarP(&attachmentName, "name", "n", "", "New filename")
 	attachmentEditCmd.Flags().BoolVarP(&attachmentArchived, "archive", "a", false, "Archive the attachment")
 	attachmentEditCmd.Flags().BoolVarP(&attachmentArchived, "unarchive", "u", false, "Unarchive the attachment")
+	attachmentDeleteCmd.Flags().BoolVarP(&attachmentDeleteYes, "yes", "y", false, "Skip confirmation")
 
 	attachmentCmd.AddCommand(attachmentListCmd)
 	attachmentCmd.AddCommand(attachmentUploadCmd)
@@ -201,6 +203,10 @@ func runAttachmentDelete(cmd *cobra.Command, args []string) error {
 
 	issueID := args[0]
 	attachmentID := args[1]
+
+	if !attachmentDeleteYes {
+		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm deletion")
+	}
 
 	client, err := api.NewClient()
 	if err != nil {

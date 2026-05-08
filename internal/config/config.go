@@ -27,7 +27,7 @@ type Config struct {
 	DefaultWorkspace string `mapstructure:"default_workspace"`
 	DefaultProject   string `mapstructure:"default_project"`
 	DefaultAssignee  string `mapstructure:"default_assignee"`
-	OutputFormat     string `mapstructure:"output_format"`
+	OutputFormat     string
 	APIHost          string `mapstructure:"api_host"`
 }
 
@@ -43,14 +43,10 @@ var (
 )
 
 func InitConfig() error {
-	return initConfig(true)
+	return initConfig()
 }
 
-func InitConfigAllowInvalidOutput() error {
-	return initConfig(false)
-}
-
-func initConfig(validateOutput bool) error {
+func initConfig() error {
 	viper.Reset()
 
 	if cfgFile != "" {
@@ -72,7 +68,6 @@ func initConfig(validateOutput bool) error {
 	}
 
 	viper.SetDefault("version", "1.0")
-	viper.SetDefault("output_format", output.DefaultFormat)
 	viper.SetDefault("api_host", DefaultAPIHost)
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -92,14 +87,7 @@ func initConfig(validateOutput bool) error {
 	if err := viper.Unmarshal(&Cfg); err != nil {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
 	}
-	if err := output.ValidateFormat(Cfg.OutputFormat); err != nil {
-		Cfg.OutputFormat = output.DefaultFormat
-		if validateOutput {
-			viper.Set("output_format", Cfg.OutputFormat)
-		}
-	} else {
-		Cfg.OutputFormat = output.NormalizeFormat(Cfg.OutputFormat)
-	}
+	Cfg.OutputFormat = output.DefaultFormat
 
 	loadLocalConfig()
 
@@ -142,7 +130,6 @@ func SaveConfig() error {
 	viper.Set("version", Cfg.Version)
 	viper.Set("default_workspace", Cfg.DefaultWorkspace)
 	viper.Set("default_project", Cfg.DefaultProject)
-	viper.Set("output_format", Cfg.OutputFormat)
 	viper.Set("api_host", Cfg.APIHost)
 
 	// If config file path is explicitly set, use it

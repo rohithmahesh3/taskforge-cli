@@ -8,7 +8,7 @@ A powerful command-line interface for [TaskForge](https://github.com/rohithmahes
 ## Features
 
 - 🔐 **Secure Authentication** - API key stored in OS keyring
-- 📊 **Multiple Output Formats** - Table, JSON, and YAML
+- 📊 **Consistent YAML Output** - Structured YAML output for scripting and readability
 - 🎯 **Interactive Mode** - Prompts for missing required fields
 - 🔍 **Work Item Filtering** - Filter work items by state and assignee
 - ⚡ **Fast & Lightweight** - Single binary, no dependencies
@@ -95,7 +95,6 @@ Configuration is stored in `~/.config/taskforge/config.yaml`:
 version: "1.0"
 default_workspace: my-workspace
 default_project: my-project-id
-output_format: yaml
 api_host: https://api.taskforge.app
 ```
 
@@ -460,14 +459,11 @@ taskforge context --workspace
 taskforge context --all
 ```
 
-### Output Formats
+### Output
 
 ```bash
-# JSON output
-taskforge issue list --output json
-
-# YAML output
-taskforge project list -o yaml
+# YAML is the default output format
+taskforge project list
 
 # No colors
 taskforge issue list --no-color

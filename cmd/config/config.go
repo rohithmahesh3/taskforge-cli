@@ -41,12 +41,10 @@ func normalizeConfigKey(key string) (string, error) {
 		return "workspace", nil
 	case "project", "default_project":
 		return "project", nil
-	case "output", "output_format", "format":
-		return "output", nil
 	case "api_host", "api_host_url", "host":
 		return "api_host", nil
 	default:
-		return "", fmt.Errorf("unknown config key: %q (valid keys: workspace, project, output, api_host)", key)
+		return "", fmt.Errorf("unknown config key: %q (valid keys: workspace, project, api_host)", key)
 	}
 }
 
@@ -55,7 +53,6 @@ func runGet(cmd *cobra.Command, args []string) error {
 		// Show all config
 		fmt.Printf("default_workspace: %s\n", config.Cfg.DefaultWorkspace)
 		fmt.Printf("default_project: %s\n", config.Cfg.DefaultProject)
-		fmt.Printf("output_format: %s\n", config.Cfg.OutputFormat)
 		fmt.Printf("api_host: %s\n", config.Cfg.APIHost)
 		return nil
 	}
@@ -70,8 +67,6 @@ func runGet(cmd *cobra.Command, args []string) error {
 		fmt.Println(config.Cfg.DefaultWorkspace)
 	case "project":
 		fmt.Println(config.Cfg.DefaultProject)
-	case "output":
-		fmt.Println(config.Cfg.OutputFormat)
 	case "api_host":
 		fmt.Println(config.Cfg.APIHost)
 	}
@@ -92,12 +87,6 @@ func runSet(cmd *cobra.Command, args []string) error {
 		config.Cfg.DefaultWorkspace = value
 	case "project":
 		config.Cfg.DefaultProject = value
-	case "output":
-		if err := output.ValidateFormat(value); err != nil {
-			return err
-		}
-		value = output.NormalizeFormat(value)
-		config.Cfg.OutputFormat = value
 	case "api_host":
 		config.Cfg.APIHost = value
 	}

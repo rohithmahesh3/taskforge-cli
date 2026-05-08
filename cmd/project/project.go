@@ -33,6 +33,7 @@ var createNameFlag string
 var createIdentifierFlag string
 var createDescriptionFlag string
 var createSetDefaultFlag bool
+var deleteYesFlag bool
 
 var createCmd = &cobra.Command{
 	Use:   "create [name]",
@@ -77,6 +78,7 @@ func init() {
 	createCmd.Flags().StringVarP(&createIdentifierFlag, "identifier", "i", "", "Project identifier (e.g., PROJ, WEB)")
 	createCmd.Flags().StringVarP(&createDescriptionFlag, "description", "d", "", "Project description")
 	createCmd.Flags().BoolVar(&createSetDefaultFlag, "set-default", false, "Set as default project after creation")
+	deleteCmd.Flags().BoolVarP(&deleteYesFlag, "yes", "y", false, "Skip confirmation")
 }
 
 func runList(cmd *cobra.Command, args []string) error {
@@ -204,7 +206,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	output.Success(fmt.Sprintf("Created project '%s' (%s)", project.Name, project.Identifier))
+	output.Success(fmt.Sprintf("Created project '%s' (id=%s, identifier=%s)", project.Name, project.ID, project.Identifier))
 
 	// Set as default if --set-default flag is provided, or ask interactively
 	if createSetDefaultFlag {
@@ -263,19 +265,21 @@ func runInfo(cmd *cobra.Command, args []string) error {
 func runDelete(cmd *cobra.Command, args []string) error {
 	projectID := args[0]
 
-	// Confirm deletion
-	var confirm bool
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete project %s?", projectID),
-		Default: false,
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return err
-	}
+	if !deleteYesFlag {
+		// Confirm deletion
+		var confirm bool
+		prompt := &survey.Confirm{
+			Message: fmt.Sprintf("Are you sure you want to delete project %s?", projectID),
+			Default: false,
+		}
+		if err := survey.AskOne(prompt, &confirm); err != nil {
+			return err
+		}
 
-	if !confirm {
-		output.Info("Deletion cancelled")
-		return nil
+		if !confirm {
+			output.Info("Deletion cancelled")
+			return nil
+		}
 	}
 
 	client, err := api.NewClient()

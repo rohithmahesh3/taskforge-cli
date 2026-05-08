@@ -34,7 +34,7 @@ func init() {
 	linkAddCmd := &cobra.Command{
 		Use:   "add <issue-id> <url>",
 		Short: "Add a link to an issue",
-		Args:  cobra.RangeArgs(1, 2),
+		Args:  cobra.ExactArgs(2),
 		RunE:  runLinkAdd,
 	}
 
@@ -112,15 +112,7 @@ func runLinkAdd(cmd *cobra.Command, args []string) error {
 
 	issueID := args[0]
 
-	var url string
-	if len(args) > 1 {
-		url = args[1]
-	}
-
-	// Interactive prompts if flags not provided
-	if url == "" {
-		return fmt.Errorf("URL is required (provide as positional argument)")
-	}
+	url := args[1]
 
 	client, err := api.NewClient()
 	if err != nil {

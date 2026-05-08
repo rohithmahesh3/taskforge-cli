@@ -272,7 +272,7 @@ taskforge context --workspace --cycle --intake --project
 ### Important Notes
 
 - All entity references (assignees, labels, states) require UUIDs
-- Output is YAML-only (` + "`--output yaml`" + ` is optional because YAML is the default)
+- Output is YAML-only by default
 - Use ` + "`" + `taskforge workspace members` + "`" + ` to get user IDs
 - Use ` + "`" + `taskforge state list` + "`" + ` to get state IDs
 - Use ` + "`" + `taskforge label list` + "`" + ` to get label IDs

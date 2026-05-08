@@ -52,6 +52,44 @@ func TestClient_RestoreCommentPayloadUsesVersion(t *testing.T) {
 	assert.False(t, hasLegacy)
 }
 
+func TestClient_RestoreIssuePayloadOmitsVersionWhenDefault(t *testing.T) {
+	var body map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(t, "POST", r.Method)
+		require.Equal(t, "/api/v1/workspaces/ws/projects/p-1/work-items/i-1/restore/", r.URL.Path)
+		raw, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		require.NoError(t, json.Unmarshal(raw, &body))
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": "i-1"})
+	}))
+	defer server.Close()
+
+	client := &Client{HTTPClient: &http.Client{Timeout: DefaultTimeout}, BaseURL: server.URL, APIKey: "k", Workspace: "ws"}
+	_, err := client.RestoreIssue("p-1", "i-1", 0)
+	require.NoError(t, err)
+	_, hasVersion := body["version"]
+	assert.False(t, hasVersion)
+}
+
+func TestClient_RestoreCommentPayloadOmitsVersionWhenDefault(t *testing.T) {
+	var body map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(t, "POST", r.Method)
+		require.Equal(t, "/api/v1/workspaces/ws/projects/p-1/work-items/i-1/comments/c-1/restore/", r.URL.Path)
+		raw, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		require.NoError(t, json.Unmarshal(raw, &body))
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": "c-1", "comment_stripped": "ok"})
+	}))
+	defer server.Close()
+
+	client := &Client{HTTPClient: &http.Client{Timeout: DefaultTimeout}, BaseURL: server.URL, APIKey: "k", Workspace: "ws"}
+	_, err := client.RestoreComment("p-1", "i-1", "c-1", 0)
+	require.NoError(t, err)
+	_, hasVersion := body["version"]
+	assert.False(t, hasVersion)
+}
+
 func TestClient_UpdateIssuePayloadUsesListKeys(t *testing.T) {
 	var body map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

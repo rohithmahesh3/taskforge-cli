@@ -30,7 +30,6 @@ var (
 
 	workspaceSlug string
 	projectID     string
-	outputFmt     string
 	noColor       bool
 	configFile    string
 )
@@ -61,13 +60,7 @@ Get started:
 			cfg.SetConfigFile(configFile)
 		}
 
-		allowInvalidOutputConfig := shouldAllowInvalidOutputConfig(cmd, args)
-		initConfig := cfg.InitConfig
-		if allowInvalidOutputConfig {
-			initConfig = cfg.InitConfigAllowInvalidOutput
-		}
-
-		if err := initConfig(); err != nil {
+		if err := cfg.InitConfig(); err != nil {
 			return fmt.Errorf("failed to initialize config: %w", err)
 		}
 
@@ -78,22 +71,13 @@ Get started:
 		if projectID != "" {
 			cfg.Cfg.DefaultProject = projectID
 		}
-		if outputFmt != "" {
-			cfg.Cfg.OutputFormat = outputFmt
+		if err := output.ValidateFormat(cfg.Cfg.OutputFormat); err != nil {
+			return err
 		}
-		if !allowInvalidOutputConfig {
-			if err := output.ValidateFormat(cfg.Cfg.OutputFormat); err != nil {
-				return err
-			}
-			cfg.Cfg.OutputFormat = output.NormalizeFormat(cfg.Cfg.OutputFormat)
-		}
+		cfg.Cfg.OutputFormat = output.NormalizeFormat(cfg.Cfg.OutputFormat)
 
 		return nil
 	},
-}
-
-func shouldAllowInvalidOutputConfig(cmd *cobra.Command, args []string) bool {
-	return cmd.CommandPath() == "taskforge config set" && len(args) >= 1 && args[0] == "output"
 }
 
 func Execute() error {
@@ -103,7 +87,6 @@ func Execute() error {
 func init() {
 	rootCmd.PersistentFlags().StringVar(&workspaceSlug, "workspace", "", "TaskForge workspace slug (overrides config)")
 	rootCmd.PersistentFlags().StringVar(&projectID, "project", "", "TaskForge project ID (overrides config)")
-	rootCmd.PersistentFlags().StringVarP(&outputFmt, "output", "o", "", "Output format: yaml (overrides config)")
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colored output")
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Config file path (default: ~/.config/taskforge/config.yaml)")
 

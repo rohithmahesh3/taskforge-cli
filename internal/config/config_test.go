@@ -116,23 +116,6 @@ func TestInitConfigNormalizesInvalidOutputFormatToYAML(t *testing.T) {
 	assert.Equal(t, "yaml", Cfg.OutputFormat)
 }
 
-func TestInitConfigAllowInvalidOutputNormalizesToYAML(t *testing.T) {
-	tempDir := t.TempDir()
-	configDir := filepath.Join(tempDir, ".config", AppName)
-	err := os.MkdirAll(configDir, 0755)
-	require.NoError(t, err)
-
-	configPath := filepath.Join(configDir, ConfigFileName+".yaml")
-	err = os.WriteFile(configPath, []byte("output_format: table\n"), 0644)
-	require.NoError(t, err)
-
-	SetConfigFile(configPath)
-
-	err = InitConfigAllowInvalidOutput()
-	require.NoError(t, err)
-	assert.Equal(t, "yaml", Cfg.OutputFormat)
-}
-
 func TestLocalConfig(t *testing.T) {
 	tempDir := t.TempDir()
 

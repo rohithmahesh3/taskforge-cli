@@ -16,7 +16,6 @@ All commands inherit these global flags from the root command.
 |-------|------|------|---------|-------------|-------------|
 | | `--workspace` | string | (from config) | Workspace slug (overrides config) | PASS — `taskforge issue list --workspace engineering` |
 | | `--project` | string | (from config) | TaskForge project ID (overrides config) | PASS — `taskforge issue list --project d1a511e2-816c-4e43-a599-b1ae0cbd8297` |
-| `-o` | `--output` | string | (from config) | Output format: json, yaml | PASS — `taskforge issue list -o json` |
 | | `--no-color` | bool | false | Disable colored output | PASS — `taskforge issue list --no-color` |
 | | `--config` | string | `~/.config/taskforge/config.yaml` | Config file path | PASS — `taskforge auth status --config ~/.config/taskforge/config.yaml` |
 
@@ -148,15 +147,13 @@ Set a configuration value.
 
 **Flags:** None (inherits global)
 
-**Positional Arguments:** `<key>` — One of: `workspace`, `project`, `output`, `api_host`; `<value>` — The value to set
+**Positional Arguments:** `<key>` — One of: `workspace`, `project`, `api_host`; `<value>` — The value to set
 
 **Test Results:**
 
 | Invocation | Result |
 |------------|--------|
 | `taskforge config set default_project d1a511e2-816c-4e43-a599-b1ae0cbd8297` | PASS — `✓ Set project to d1a511e2-...` |
-| `taskforge config set output_format json` | FAIL — unknown config key `output_format`; correct key is `output` |
-| `taskforge config set output json` | PASS — `✓ Set output to json` |
 
 ---
 
@@ -1549,7 +1546,6 @@ $ taskforge completion bash
 ### Known Issues
 
 1. **`--version` not supported on root command**: `taskforge --version` returns `Error: unknown flag: --version`. Use `taskforge version` instead.
-2. **`config set output_format`**: The config key is `output`, not `output_format`. Using `output_format` returns `unknown config key`.
-3. **Intake create returns 500**: The `intake create` command triggers a server-side 500 error with an empty error message. This is a backend issue, not a CLI bug.
-4. **Time tracking commands**: All time-related commands (`time log`, `time list`, `time total`, `time edit`, `time delete`) fail with "time tracking is disabled for project" error. This is expected when the project has time tracking disabled.
-5. **Project create is interactive**: `taskforge project create` has no flags for name/identifier — uses interactive prompts even with arguments. The `init` command provides `--project-name` and `--project-identifier` flags for non-interactive project creation.
+2. **Intake create returns 500**: The `intake create` command triggers a server-side 500 error with an empty error message. This is a backend issue, not a CLI bug.
+3. **Time tracking commands**: All time-related commands (`time log`, `time list`, `time total`, `time edit`, `time delete`) fail with "time tracking is disabled for project" error. This is expected when the project has time tracking disabled.
+4. **Project create is interactive**: `taskforge project create` has no flags for name/identifier — uses interactive prompts even with arguments. The `init` command provides `--project-name` and `--project-identifier` flags for non-interactive project creation.

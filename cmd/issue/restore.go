@@ -42,10 +42,21 @@ func runRestore(cmd *cobra.Command, args []string) error {
 	}
 
 	issueRef := args[0]
+	resolvedIssueRef := issueRef
 
 	client, err := api.NewClient()
 	if err != nil {
 		return err
+	}
+
+	// Resolve to UUID when possible to avoid identifier-based restore edge cases.
+	// For deleted issues, resolution via read endpoints may fail; in that case
+	// we fall back to the original user-provided reference.
+	if !looksLikeUUID(issueRef) {
+		if resolvedProjectID, resolvedIssueID, resolveErr := resolveIssueContext(client, projectID, issueRef); resolveErr == nil {
+			projectID = resolvedProjectID
+			resolvedIssueRef = resolvedIssueID
+		}
 	}
 
 	confirm := restoreYes
@@ -53,7 +64,7 @@ func runRestore(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("confirmation required; use --yes / -y flag to confirm restoration")
 	}
 
-	issue, err := client.RestoreIssue(projectID, issueRef, restoreVersionNum)
+	issue, err := client.RestoreIssue(projectID, resolvedIssueRef, restoreVersionNum)
 	if err != nil {
 		return fmt.Errorf("failed to restore issue: %w", err)
 	}

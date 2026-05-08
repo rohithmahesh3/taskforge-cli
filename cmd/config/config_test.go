@@ -10,22 +10,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRunSetOutputAcceptsYAMLOnly(t *testing.T) {
+func TestRunSetWorkspace(t *testing.T) {
 	setupConfigTest(t)
 
-	err := runSet(nil, []string{"output", "yaml"})
+	err := runSet(nil, []string{"workspace", "engineering"})
 	require.NoError(t, err)
-	assert.Equal(t, "yaml", internalconfig.Cfg.OutputFormat)
+	assert.Equal(t, "engineering", internalconfig.Cfg.DefaultWorkspace)
 }
 
-func TestRunSetOutputRejectsNonYAML(t *testing.T) {
+func TestRunSetRejectsOutputKey(t *testing.T) {
 	setupConfigTest(t)
-	initial := internalconfig.Cfg.OutputFormat
-
-	err := runSet(nil, []string{"output", "json"})
+	err := runSet(nil, []string{"output", "yaml"})
 	require.Error(t, err)
-	assert.EqualError(t, err, `invalid output format "json": supported format is yaml`)
-	assert.Equal(t, initial, internalconfig.Cfg.OutputFormat)
+	assert.Contains(t, err.Error(), "unknown config key")
 }
 
 func setupConfigTest(t *testing.T) {
@@ -33,7 +30,7 @@ func setupConfigTest(t *testing.T) {
 
 	tempDir := t.TempDir()
 	configDir := filepath.Join(tempDir, ".config", internalconfig.AppName)
-	err := os.MkdirAll(configDir, 0755)
+	err := os.MkdirAll(configDir, 0o755)
 	require.NoError(t, err)
 
 	originalWd, err := os.Getwd()
