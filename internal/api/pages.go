@@ -126,6 +126,20 @@ func (c *Client) DeletePage(projectID, pageID string) error {
 	return c.Delete(path)
 }
 
+// PatchPage applies RFC 6902-style JSON Patch operations to a page.
+func (c *Client) PatchPage(projectID, pageID string, patches []taskforge.PatchOp) (*taskforge.Page, error) {
+	path := fmt.Sprintf("/workspaces/%s/projects/%s/pages/%s/", c.Workspace, projectID, pageID)
+
+	req := taskforge.PatchRequest{Patches: patches}
+
+	var page taskforge.Page
+	if err := c.Patch(path, req, &page); err != nil {
+		return nil, err
+	}
+
+	return &page, nil
+}
+
 // GetPageVersions retrieves version history for a page.
 func (c *Client) GetPageVersions(projectID, pageID, field string) ([]taskforge.ContentVersion, error) {
 	path := fmt.Sprintf("/workspaces/%s/projects/%s/pages/%s/versions/", c.Workspace, projectID, pageID)

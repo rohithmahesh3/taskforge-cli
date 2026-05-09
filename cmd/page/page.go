@@ -1,7 +1,10 @@
 package page
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
@@ -23,6 +26,14 @@ var (
 	pageField       string
 	pageVersionNum  int
 	pageRestoreYes  bool
+	pagePatchOp     string
+	pagePatchField  string
+	pagePatchValue  string
+	pagePatchDiff   string
+	pagePatchAfter  string
+	pagePatchBefore string
+	pagePatchFile   string
+	pagePatchActual string
 
 	catName        string
 	catDescription string
@@ -143,6 +154,27 @@ Examples:
 	RunE: runPageRestore,
 }
 
+var pagePatchCmd = &cobra.Command{
+	Use:   "patch <page-id>",
+	Short: "Apply text patch operations to a page",
+	Long: `Apply JSON Patch operations to a page's fields.
+
+Operations:
+  - replace: Replace exact old text with new text
+  - diff:    Apply a unified diff to a text field
+  - insert:  Insert text after an anchor point in a field
+  - delete:  Delete exact old text from a field
+
+Examples:
+  taskforge page patch <page-id> --op replace --field content --actual "old text" --value "new text"
+  taskforge page patch <page-id> --op diff --field content --diff "@@ -1,3 +1,4 @@..."
+  taskforge page patch <page-id> --op insert --field content --after "anchor" --value "text"
+  taskforge page patch <page-id> --op delete --field content --actual "text to delete"
+  taskforge page patch <page-id> --file patches.json`,
+	Args: cobra.ExactArgs(1),
+	RunE: runPagePatch,
+}
+
 // ── Page Category subcommands ──
 
 var pageCategoryCmd = &cobra.Command{
@@ -198,6 +230,7 @@ func init() {
 	PageCmd.AddCommand(pageCategoryCmd)
 	PageCmd.AddCommand(pageVersionCmd)
 	PageCmd.AddCommand(pageRestoreCmd)
+	PageCmd.AddCommand(pagePatchCmd)
 
 	// List flags
 	pageListCmd.Flags().StringVarP(&pageSearchQuery, "search", "s", "", "Search pages by keyword")
@@ -267,6 +300,16 @@ func init() {
 	pageRestoreCmd.Flags().StringVarP(&pageField, "field", "f", "", "Specific field to restore (default: all versionable fields)")
 	pageRestoreCmd.Flags().BoolVarP(&pageRestoreYes, "yes", "y", false, "Skip confirmation")
 	_ = pageRestoreCmd.MarkFlagRequired("version-num")
+
+	// Patch flags
+	pagePatchCmd.Flags().StringVar(&pagePatchOp, "op", "", "Patch operation: replace, diff, insert, delete")
+	pagePatchCmd.Flags().StringVar(&pagePatchField, "field", "", "Field to patch (content or title)")
+	pagePatchCmd.Flags().StringVar(&pagePatchValue, "value", "", "Value for replace/insert operations")
+	pagePatchCmd.Flags().StringVar(&pagePatchDiff, "diff", "", "Unified diff string for diff operation")
+	pagePatchCmd.Flags().StringVar(&pagePatchAfter, "after", "", "Anchor text after which to insert")
+	pagePatchCmd.Flags().StringVar(&pagePatchBefore, "before", "", "Legacy delete anchor input (auto-mapped to old text when possible)")
+	pagePatchCmd.Flags().StringVar(&pagePatchActual, "actual", "", "Current/expected text precondition (required for replace/delete)")
+	pagePatchCmd.Flags().StringVar(&pagePatchFile, "file", "", "Read patches from a JSON file")
 }
 
 // ── Page run functions ──
@@ -730,4 +773,146 @@ func runPageRestore(cmd *cobra.Command, args []string) error {
 
 	output.Success(fmt.Sprintf("Restored page '%s' to version %d", page.Title, pageVersionNum))
 	return nil
+}
+
+func runPagePatch(cmd *cobra.Command, args []string) error {
+	projectID := config.Cfg.DefaultProject
+	if projectID == "" {
+		return fmt.Errorf("no project specified")
+	}
+
+	pageID := args[0]
+
+	client, err := api.NewClient()
+	if err != nil {
+		return err
+	}
+
+	var patches []taskforge.PatchOp
+	if pagePatchFile != "" {
+		patches, err = loadPagePatchesFromFile(pagePatchFile)
+		if err != nil {
+			return fmt.Errorf("failed to load patches from file: %w", err)
+		}
+	} else {
+		patches, err = buildPagePatchFromFlags()
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(patches) == 0 {
+		return fmt.Errorf("no patch operations specified. Use --op/--field flags or --file to provide patches")
+	}
+
+	page, err := client.PatchPage(projectID, pageID, patches)
+	if err != nil {
+		var apiErr *api.APIError
+		if errors.As(err, &apiErr) && apiErr.StatusCode == 409 && len(apiErr.Conflicts) > 0 {
+			return fmt.Errorf("failed to apply patch: %s (conflicts: %s)", apiErr.Message, string(apiErr.Conflicts))
+		}
+		return fmt.Errorf("failed to apply patch: %w", err)
+	}
+
+	formatter := output.NewFormatter(config.Cfg.OutputFormat, false)
+	return formatter.Print(page)
+}
+
+func buildPagePatchFromFlags() ([]taskforge.PatchOp, error) {
+	if pagePatchOp == "" {
+		return nil, fmt.Errorf("--op flag is required when not using --file")
+	}
+	if pagePatchField == "" {
+		return nil, fmt.Errorf("--field flag is required when not using --file")
+	}
+
+	p := taskforge.PatchOp{
+		Op:      pagePatchOp,
+		Field:   pagePatchField,
+		After:   pagePatchAfter,
+		Old:     pagePatchActual,
+		New:     pagePatchValue,
+		Content: pagePatchValue,
+		Unified: pagePatchDiff,
+		Value:   pagePatchValue,
+		Diff:    pagePatchDiff,
+		Before:  pagePatchBefore,
+	}
+
+	switch pagePatchOp {
+	case "replace":
+		if pagePatchValue == "" {
+			return nil, fmt.Errorf("--value is required for replace operation")
+		}
+		if pagePatchActual == "" {
+			return nil, fmt.Errorf("--actual is required for replace operation")
+		}
+	case "diff":
+		if pagePatchDiff == "" {
+			return nil, fmt.Errorf("--diff is required for diff operation")
+		}
+	case "insert":
+		if pagePatchValue == "" {
+			return nil, fmt.Errorf("--value is required for insert operation")
+		}
+		if pagePatchAfter == "" {
+			return nil, fmt.Errorf("--after is required for insert operation")
+		}
+	case "delete":
+		if pagePatchActual == "" && pagePatchBefore == "" {
+			return nil, fmt.Errorf("--actual is required for delete operation")
+		}
+		if p.Old == "" {
+			p.Old = pagePatchBefore
+		}
+	default:
+		return nil, fmt.Errorf("unsupported operation %q: must be one of replace, diff, insert, delete", pagePatchOp)
+	}
+
+	return normalizePagePatches([]taskforge.PatchOp{p}), nil
+}
+
+func loadPagePatchesFromFile(path string) ([]taskforge.PatchOp, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var req taskforge.PatchRequest
+	if err := json.Unmarshal(data, &req); err == nil && len(req.Patches) > 0 {
+		return req.Patches, nil
+	}
+
+	var patches []taskforge.PatchOp
+	if err := json.Unmarshal(data, &patches); err != nil {
+		return nil, fmt.Errorf("file must contain a JSON array of patch operations or a JSON object with a 'patches' field")
+	}
+
+	return normalizePagePatches(patches), nil
+}
+
+func normalizePagePatches(patches []taskforge.PatchOp) []taskforge.PatchOp {
+	out := make([]taskforge.PatchOp, 0, len(patches))
+	for _, p := range patches {
+		switch p.Op {
+		case "replace":
+			if p.New == "" && p.Value != "" {
+				p.New = p.Value
+			}
+		case "insert":
+			if p.Content == "" && p.Value != "" {
+				p.Content = p.Value
+			}
+		case "delete":
+			if p.Old == "" && p.Before != "" {
+				p.Old = p.Before
+			}
+		case "diff":
+			if p.Unified == "" && p.Diff != "" {
+				p.Unified = p.Diff
+			}
+		}
+		out = append(out, p)
+	}
+	return out
 }

@@ -214,9 +214,9 @@ func TestGetPage(t *testing.T) {
 		}
 
 		page := taskforge.Page{
-			ID:     "pg-123",
-			Title:  "Getting Started",
-			Slug:   "getting-started",
+			ID:      "pg-123",
+			Title:   "Getting Started",
+			Slug:    "getting-started",
 			Content: "Full content here",
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -241,6 +241,48 @@ func TestGetPage(t *testing.T) {
 	}
 	if page.Content != "Full content here" {
 		t.Errorf("Expected full content, got '%s'", page.Content)
+	}
+}
+
+func TestPatchPageUsesServerPatchSchema(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PATCH" {
+			t.Errorf("Expected PATCH request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/workspaces/test-workspace/projects/test-project/pages/pg-123/" {
+			t.Errorf("Unexpected path: %s", r.URL.Path)
+		}
+
+		var req taskforge.PatchRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Fatalf("Failed to decode request: %v", err)
+		}
+		if len(req.Patches) != 1 {
+			t.Fatalf("Expected 1 patch op, got %d", len(req.Patches))
+		}
+		if req.Patches[0].Old != "old text" || req.Patches[0].New != "new text" {
+			t.Fatalf("Expected old/new patch mapping, got old=%q new=%q", req.Patches[0].Old, req.Patches[0].New)
+		}
+
+		_ = json.NewEncoder(w).Encode(taskforge.Page{ID: "pg-123", Title: "Updated"})
+	}))
+	defer server.Close()
+
+	client := &Client{
+		HTTPClient: server.Client(),
+		BaseURL:    server.URL,
+		APIKey:     "test-key",
+		Workspace:  "test-workspace",
+	}
+
+	page, err := client.PatchPage("test-project", "pg-123", []taskforge.PatchOp{
+		{Op: "replace", Field: "content", Old: "old text", New: "new text"},
+	})
+	if err != nil {
+		t.Fatalf("PatchPage failed: %v", err)
+	}
+	if page.Title != "Updated" {
+		t.Fatalf("Expected title Updated, got %q", page.Title)
 	}
 }
 
@@ -388,10 +430,10 @@ func TestGetPageVersion(t *testing.T) {
 
 func TestGetPageVersionDiff(t *testing.T) {
 	mockDiff := map[string]interface{}{
-		"field":           "content",
-		"version":         2,
+		"field":            "content",
+		"version":          2,
 		"previous_content": "old",
-		"current_content": "new",
+		"current_content":  "new",
 		"diff":             "--- a\n+++ b\n",
 	}
 
