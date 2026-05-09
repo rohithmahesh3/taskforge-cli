@@ -38,6 +38,7 @@ func runContext(cmd *cobra.Command, args []string) error {
 	output += getIssueCommands()
 	output += getProjectCommands()
 	output += getModuleCommands()
+	output += getPageCommands()
 	output += getStateCommands()
 	output += getLabelCommands()
 	output += getTypeCommands()
@@ -160,6 +161,32 @@ taskforge module remove-issue <module-id:uuid> <issue-id:uuid>
 `
 }
 
+func getPageCommands() string {
+	return `## Page (aliases: pages, doc)
+` + "```" + `
+taskforge page list [--search <text>] [--category <id:uuid>]
+taskforge page view <id:uuid>
+taskforge page create --title <text> --slug <slug:text> --category <id:uuid>
+                     [--content <markdown:text>] [--sort-order <int>] [--published]
+taskforge page edit <id:uuid> [--title <text>] [--content <markdown:text>] [--slug <slug:text>]
+                   [--category <id:uuid>] [--sort-order <int>] [--published | --unpublished]
+taskforge page delete <id:uuid> --yes
+
+# Page Patch
+taskforge page patch <page-id:uuid> --op <replace|diff|insert|delete> --field <content|title>
+                   [--actual <text>] [--value <text>] [--after <anchor>] [--diff <unified-diff>]
+taskforge page patch <page-id:uuid> --file <patches.json>
+
+# Page Versions & Restore
+taskforge page version list <page-id:uuid> [--field <content|title>]
+taskforge page version get <page-id:uuid> <version-num:int> --field <content|title>
+taskforge page version diff <page-id:uuid> <version-num:int> --field <content|title>
+taskforge page restore <page-id:uuid> --version-num <int> [--field <content|title>] --yes
+` + "```" + `
+
+`
+}
+
 func getStateCommands() string {
 	return `## State (aliases: states)
 ` + "```" + `
@@ -261,6 +288,7 @@ func GetGlobalFlags() string       { return getGlobalFlags() }
 func GetIssueCommands() string     { return getIssueCommands() }
 func GetProjectCommands() string   { return getProjectCommands() }
 func GetModuleCommands() string    { return getModuleCommands() }
+func GetPageCommands() string      { return getPageCommands() }
 func GetStateCommands() string     { return getStateCommands() }
 func GetLabelCommands() string     { return getLabelCommands() }
 func GetTypeCommands() string      { return getTypeCommands() }

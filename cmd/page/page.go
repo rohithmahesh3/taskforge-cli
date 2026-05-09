@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/rohithmahesh3/taskforge-cli/internal/api"
 	"github.com/rohithmahesh3/taskforge-cli/internal/config"
@@ -255,6 +256,7 @@ func init() {
 	pageEditCmd.Flags().IntVarP(&pageSortOrder, "sort-order", "o", 0, "New sort order")
 	pageEditCmd.Flags().BoolVar(&pagePublished, "published", false, "Publish status")
 	pageEditCmd.Flags().BoolVar(&pagePublished, "unpublished", false, "Unpublish")
+	pageEditCmd.MarkFlagsMutuallyExclusive("published", "unpublished")
 
 	// Delete flags
 	pageDeleteCmd.Flags().BoolVarP(&pageDeleteYes, "yes", "y", false, "Skip confirmation")
@@ -646,6 +648,9 @@ func runPageVersionList(cmd *cobra.Command, args []string) error {
 	}
 
 	pageID := args[0]
+	if err := validatePageField(pageField, true); err != nil {
+		return err
+	}
 
 	client, err := api.NewClient()
 	if err != nil {
@@ -696,6 +701,9 @@ func runPageVersionGet(cmd *cobra.Command, args []string) error {
 
 	pageID := args[0]
 	versionNum := args[1]
+	if err := validatePageField(pageField, false); err != nil {
+		return err
+	}
 
 	client, err := api.NewClient()
 	if err != nil {
@@ -719,6 +727,9 @@ func runPageVersionDiff(cmd *cobra.Command, args []string) error {
 
 	pageID := args[0]
 	versionNum := args[1]
+	if err := validatePageField(pageField, false); err != nil {
+		return err
+	}
 
 	client, err := api.NewClient()
 	if err != nil {
@@ -744,6 +755,9 @@ func runPageRestore(cmd *cobra.Command, args []string) error {
 
 	if !cmd.Flags().Changed("version-num") {
 		return fmt.Errorf("--version-num is required")
+	}
+	if err := validatePageField(pageField, true); err != nil {
+		return err
 	}
 	if pageVersionNum < 1 {
 		return fmt.Errorf("must be a positive integer (got %d)", pageVersionNum)
@@ -824,6 +838,9 @@ func buildPagePatchFromFlags() ([]taskforge.PatchOp, error) {
 	}
 	if pagePatchField == "" {
 		return nil, fmt.Errorf("--field flag is required when not using --file")
+	}
+	if err := validatePageField(pagePatchField, false); err != nil {
+		return nil, err
 	}
 
 	p := taskforge.PatchOp{
@@ -915,4 +932,18 @@ func normalizePagePatches(patches []taskforge.PatchOp) []taskforge.PatchOp {
 		out = append(out, p)
 	}
 	return out
+}
+
+func validatePageField(field string, allowEmpty bool) error {
+	normalized := strings.TrimSpace(field)
+	if normalized == "" {
+		if allowEmpty {
+			return nil
+		}
+		return fmt.Errorf("--field is required")
+	}
+	if normalized != "content" && normalized != "title" {
+		return fmt.Errorf("invalid --field %q: must be one of content, title", field)
+	}
+	return nil
 }

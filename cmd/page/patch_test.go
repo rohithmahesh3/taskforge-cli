@@ -33,6 +33,18 @@ func TestBuildPagePatchFromFlagsMapsServerFields(t *testing.T) {
 	assert.Equal(t, "new text", ops[0].New)
 }
 
+func TestBuildPagePatchFromFlagsRejectsInvalidField(t *testing.T) {
+	t.Cleanup(resetPagePatchFlags)
+	pagePatchOp = "replace"
+	pagePatchField = "description"
+	pagePatchValue = "new text"
+	pagePatchActual = "old text"
+
+	_, err := buildPagePatchFromFlags()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid --field")
+}
+
 func TestNormalizePagePatchesLegacyFields(t *testing.T) {
 	in := []taskforge.PatchOp{
 		{Op: "replace", Field: "content", Value: "v2", Old: "v1"},
