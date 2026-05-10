@@ -22,9 +22,9 @@ func (c *Client) AddIssueDependency(projectID, issueID, targetIssueID string, is
 	
 	payload := map[string][]string{}
 	if isBlocks {
-		payload["blocks"] = []string{targetIssueID}
+		payload["blocked_issue_ids"] = []string{targetIssueID}
 	} else {
-		payload["depends_on"] = []string{targetIssueID}
+		payload["depends_on_issue_ids"] = []string{targetIssueID}
 	}
 
 	return c.Post(path, payload, nil)
