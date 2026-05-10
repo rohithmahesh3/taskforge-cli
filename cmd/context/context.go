@@ -10,7 +10,6 @@ var (
 	includeAll       bool
 	includeProject   bool
 	includeModule    bool
-	includePage      bool
 	includeCycle     bool
 	includeWorkspace bool
 	includeIntake    bool
@@ -22,8 +21,8 @@ var ContextCmd = &cobra.Command{
 	Long: `Output a concise CLI command reference in markdown format.
 Use flags to include additional modules beyond the default set.
 
-Default modules: issue, state, label, type
-Optional modules: --project, --module, --page, --cycle, --workspace, --intake, --all`,
+Default modules: issue, state, label, type, page
+Optional modules: --project, --module, --cycle, --workspace, --intake, --all`,
 	RunE: runContext,
 }
 
@@ -31,7 +30,7 @@ func init() {
 	ContextCmd.Flags().BoolVarP(&includeAll, "all", "a", false, "Include all modules")
 	ContextCmd.Flags().BoolVar(&includeProject, "project", false, "Include project commands")
 	ContextCmd.Flags().BoolVar(&includeModule, "module", false, "Include module commands")
-	ContextCmd.Flags().BoolVar(&includePage, "page", false, "Include page commands")
+
 	ContextCmd.Flags().BoolVar(&includeCycle, "cycle", false, "Include cycle commands")
 	ContextCmd.Flags().BoolVar(&includeWorkspace, "workspace", false, "Include workspace commands")
 	ContextCmd.Flags().BoolVar(&includeIntake, "intake", false, "Include intake commands")
@@ -52,9 +51,7 @@ func runContext(cmd *cobra.Command, args []string) error {
 	if includeAll || includeModule {
 		output += getModuleCommands()
 	}
-	if includeAll || includePage {
-		output += getPageCommands()
-	}
+	output += getPageCommands()
 	if includeAll || includeCycle {
 		output += getCycleCommands()
 	}

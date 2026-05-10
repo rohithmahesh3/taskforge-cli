@@ -165,14 +165,14 @@ taskforge page restore <page-id:uuid> --version-num <int> [--field <content|titl
 For complete command documentation including modules, states, labels, cycles, and advanced features:
 
 ```bash
-# Default modules (issue, state, label, type)
+# Default modules (issue, state, label, type, page)
 taskforge context
 
-# All modules including optional (project, module, page, cycle, workspace, intake)
+# All modules including optional (project, module, cycle, workspace, intake)
 taskforge context --all
 
 # Specific optional modules
-taskforge context --workspace --cycle --intake --project --module --page
+taskforge context --workspace --cycle --intake --project --module
 ```
 
 ### Available Context Options
@@ -180,10 +180,10 @@ taskforge context --workspace --cycle --intake --project --module --page
 - `--all` - Include all modules
 - `--project` - Include project commands
 - `--module` - Include module commands
-- `--page` - Include page commands
 - `--state` - Include state commands (now default)
 - `--label` - Include label commands (now default)
 - `--type` - Include type commands (now default)
+- `--page` - Include page commands (now default)
 - `--workspace` - Include workspace commands
 - `--cycle` - Include cycle/sprint commands
 - `--intake` - Include intake commands
