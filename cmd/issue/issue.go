@@ -95,6 +95,7 @@ func init() {
 	IssueCmd.AddCommand(editCmd)
 	IssueCmd.AddCommand(deleteCmd)
 	IssueCmd.AddCommand(searchCmd)
+	IssueCmd.AddCommand(dependencyCmd)
 
 	// List flags
 	listCmd.Flags().StringVarP(&stateFilter, "state", "s", "", "Filter by state ID")

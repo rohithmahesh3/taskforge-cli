@@ -519,3 +519,27 @@ type RestorePageRequest struct {
 	Version int    `json:"version"`
 	Field   string `json:"field,omitempty"`
 }
+
+// DependencyViewItem represents an issue dependency in a project
+type DependencyViewItem struct {
+	ID          string `json:"id"`
+	FromIssueID string `json:"from_issue_id"`
+	ToIssueID   string `json:"to_issue_id"`
+	Project     string `json:"project"`
+	Workspace   string `json:"workspace"`
+	CreatedBy   string `json:"created_by,omitempty"`
+	UpdatedBy   string `json:"updated_by,omitempty"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+	RelatedIssue struct {
+		ID         string `json:"id"`
+		Identifier string `json:"identifier"`
+		Name       string `json:"name"`
+	} `json:"related_issue"`
+}
+
+// GroupedDependencies represents issue dependencies grouped by direction
+type GroupedDependencies struct {
+	DependsOn []DependencyViewItem `json:"depends_on"`
+	Blocks    []DependencyViewItem `json:"blocks"`
+}

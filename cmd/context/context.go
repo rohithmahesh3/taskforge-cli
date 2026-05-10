@@ -8,6 +8,9 @@ import (
 
 var (
 	includeAll       bool
+	includeProject   bool
+	includeModule    bool
+	includePage      bool
 	includeCycle     bool
 	includeWorkspace bool
 	includeIntake    bool
@@ -19,13 +22,16 @@ var ContextCmd = &cobra.Command{
 	Long: `Output a concise CLI command reference in markdown format.
 Use flags to include additional modules beyond the default set.
 
-Default modules: issue, project, module, state, label, type
-Optional modules: --cycle, --workspace, --intake, --all`,
+Default modules: issue, state, label, type
+Optional modules: --project, --module, --page, --cycle, --workspace, --intake, --all`,
 	RunE: runContext,
 }
 
 func init() {
 	ContextCmd.Flags().BoolVarP(&includeAll, "all", "a", false, "Include all modules")
+	ContextCmd.Flags().BoolVar(&includeProject, "project", false, "Include project commands")
+	ContextCmd.Flags().BoolVar(&includeModule, "module", false, "Include module commands")
+	ContextCmd.Flags().BoolVar(&includePage, "page", false, "Include page commands")
 	ContextCmd.Flags().BoolVar(&includeCycle, "cycle", false, "Include cycle commands")
 	ContextCmd.Flags().BoolVar(&includeWorkspace, "workspace", false, "Include workspace commands")
 	ContextCmd.Flags().BoolVar(&includeIntake, "intake", false, "Include intake commands")
@@ -36,13 +42,19 @@ func runContext(cmd *cobra.Command, args []string) error {
 
 	output += getGlobalFlags()
 	output += getIssueCommands()
-	output += getProjectCommands()
-	output += getModuleCommands()
-	output += getPageCommands()
 	output += getStateCommands()
 	output += getLabelCommands()
 	output += getTypeCommands()
 
+	if includeAll || includeProject {
+		output += getProjectCommands()
+	}
+	if includeAll || includeModule {
+		output += getModuleCommands()
+	}
+	if includeAll || includePage {
+		output += getPageCommands()
+	}
 	if includeAll || includeCycle {
 		output += getCycleCommands()
 	}
@@ -76,6 +88,11 @@ func getIssueCommands() string {
 taskforge issue delete <id:seq_id|uuid>
 taskforge issue search <query:text>
 taskforge issue patch <issue-id:seq_id|uuid> --op <replace|diff|insert|delete> --field <name|description> [--actual <text>] [--value <text>] [--after <anchor>] [--diff <unified-diff>] [--file <patches.json>]
+
+# Issue Dependencies
+taskforge issue dependency list <issue-id:seq_id|uuid>
+taskforge issue dependency add <issue-id:seq_id|uuid> <target-identifier:seq_id|uuid> [--blocks]
+taskforge issue dependency remove <issue-id:seq_id|uuid> <target-identifier:seq_id|uuid>
 
 # Issue Versions & Restore
 taskforge issue version list <issue-id:seq_id|uuid>
@@ -171,6 +188,12 @@ taskforge page create --title <text> --slug <slug:text> --category <id:uuid>
 taskforge page edit <id:uuid> [--title <text>] [--content <markdown:text>] [--slug <slug:text>]
                    [--category <id:uuid>] [--sort-order <int>] [--published | --unpublished]
 taskforge page delete <id:uuid> --yes
+
+# Page Categories
+taskforge page category list
+taskforge page category create --name <text> [--description <text>] [--sort-order <int>]
+taskforge page category edit <id:uuid> [--name <text>] [--description <text>] [--sort-order <int>]
+taskforge page category delete <id:uuid> --yes
 
 # Page Patch
 taskforge page patch <page-id:uuid> --op <replace|diff|insert|delete> --field <content|title>

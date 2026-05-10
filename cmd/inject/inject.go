@@ -25,6 +25,7 @@ var (
 	includeAll       bool
 	includeProject   bool
 	includeModule    bool
+	includePage      bool
 	includeState     bool
 	includeLabel     bool
 	includeType      bool
@@ -62,6 +63,7 @@ func init() {
 	InjectCmd.Flags().BoolVarP(&includeAll, "all", "a", false, "Include all optional modules")
 	InjectCmd.Flags().BoolVar(&includeProject, "project", false, "Include project commands")
 	InjectCmd.Flags().BoolVar(&includeModule, "module", false, "Include module commands")
+	InjectCmd.Flags().BoolVar(&includePage, "page", false, "Include page commands")
 	InjectCmd.Flags().BoolVar(&includeState, "state", false, "Include state commands")
 	InjectCmd.Flags().BoolVar(&includeLabel, "label", false, "Include label commands")
 	InjectCmd.Flags().BoolVar(&includeType, "type", false, "Include type commands")
@@ -210,10 +212,13 @@ func generateContent() string {
 
 The TaskForge CLI provides command-line access to your TaskForge workspace for issue tracking, project management, and team collaboration.
 
-	`, markerStart, timestamp)
+`, markerStart, timestamp)
 
-	// Always include full issue commands
+	// Always include default core modules
 	content += withBashFence(contextcmd.GetIssueCommands())
+	content += withBashFence(contextcmd.GetStateCommands())
+	content += withBashFence(contextcmd.GetLabelCommands())
+	content += withBashFence(contextcmd.GetTypeCommands())
 
 	// Optional modules
 	if includeAll || includeProject {
@@ -222,14 +227,8 @@ The TaskForge CLI provides command-line access to your TaskForge workspace for i
 	if includeAll || includeModule {
 		content += withBashFence(contextcmd.GetModuleCommands())
 	}
-	if includeAll || includeState {
-		content += withBashFence(contextcmd.GetStateCommands())
-	}
-	if includeAll || includeLabel {
-		content += withBashFence(contextcmd.GetLabelCommands())
-	}
-	if includeAll || includeType {
-		content += withBashFence(contextcmd.GetTypeCommands())
+	if includeAll || includePage {
+		content += withBashFence(contextcmd.GetPageCommands())
 	}
 	if includeAll || includeCycle {
 		content += withBashFence(contextcmd.GetCycleCommands())
@@ -247,14 +246,14 @@ The TaskForge CLI provides command-line access to your TaskForge workspace for i
 For complete command documentation including modules, states, labels, cycles, and advanced features:
 
 ` + "```" + `bash
-# Default modules (issue, project, module, state, label, type)
+# Default modules (issue, state, label, type)
 taskforge context
 
-# All modules including optional (cycle, workspace, intake)
+# All modules including optional (project, module, page, cycle, workspace, intake)
 taskforge context --all
 
 # Specific optional modules
-taskforge context --workspace --cycle --intake --project
+taskforge context --workspace --cycle --intake --project --module --page
 ` + "```" + `
 
 ### Available Context Options
@@ -262,9 +261,10 @@ taskforge context --workspace --cycle --intake --project
 - ` + "`" + `--all` + "`" + ` - Include all modules
 - ` + "`" + `--project` + "`" + ` - Include project commands
 - ` + "`" + `--module` + "`" + ` - Include module commands
-- ` + "`" + `--state` + "`" + ` - Include state commands
-- ` + "`" + `--label` + "`" + ` - Include label commands
-- ` + "`" + `--type` + "`" + ` - Include type commands
+- ` + "`" + `--page` + "`" + ` - Include page commands
+- ` + "`" + `--state` + "`" + ` - Include state commands (now default)
+- ` + "`" + `--label` + "`" + ` - Include label commands (now default)
+- ` + "`" + `--type` + "`" + ` - Include type commands (now default)
 - ` + "`" + `--workspace` + "`" + ` - Include workspace commands
 - ` + "`" + `--cycle` + "`" + ` - Include cycle/sprint commands
 - ` + "`" + `--intake` + "`" + ` - Include intake commands
